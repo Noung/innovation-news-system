@@ -1,0 +1,4191 @@
+﻿<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Innovation News Management System</title>
+
+    <!-- Compiled locally from the pinned Tailwind build dependency. -->
+    <link rel="stylesheet" href="/admin.css" />
+
+    <style>
+      body {
+        font-family: "Noto Sans Thai", sans-serif;
+      }
+
+      /* Custom scrollbar for tables */
+      .custom-scrollbar::-webkit-scrollbar {
+        height: 8px;
+        width: 8px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 4px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+
+      /* Button Ripple Effect */
+      .btn-ripple {
+        position: relative;
+        overflow: hidden;
+      }
+      .btn-ripple::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition:
+          width 0.3s,
+          height 0.3s;
+      }
+      .btn-ripple:active::after {
+        width: 300px;
+        height: 300px;
+      }
+
+      /* Button Shimmer Effect */
+      .btn-shimmer {
+        position: relative;
+        overflow: hidden;
+      }
+      .btn-shimmer::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transition: left 0.5s;
+      }
+      .btn-shimmer:hover::before {
+        left: 100%;
+      }
+
+      /* Pulse Animation for Loading */
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+      .animate-pulse-custom {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+
+      /* Tab styles */
+      .tab-btn {
+        border-color: transparent;
+        color: #64748b;
+        font-weight: 500;
+      }
+      .tab-btn:hover {
+        color: #2563eb;
+        background: #eff6ff;
+      }
+      .tab-btn.active {
+        border-color: #2563eb;
+        color: #2563eb;
+        font-weight: 600;
+      }
+
+      /* Hide scrollbar for tabs on mobile */
+      .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <div class="min-h-screen flex flex-col">
+      <!-- Top Header -->
+      <div class="bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div class="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex justify-between items-center h-16">
+            <div class="flex items-center gap-4">
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center shadow-lg shadow-primary-200"
+                >
+                  <span class="text-white text-xl font-bold">🤖</span>
+                </div>
+                <div>
+                  <h1 class="text-lg font-bold text-gray-900">
+                    <a
+                      href="/"
+                      class="hover:text-primary-500 transition-colors"
+                    >
+                      <span class="sm:hidden">INMS</span>
+                      <span class="hidden sm:inline"
+                        >Innovation News Management System</span
+                      >
+                    </a>
+                  </h1>
+                  <p class="hidden sm:block text-xs text-gray-500">
+                    ระบบเผยแพร่ข่าวสารด้านวิจัย นวัตกรรม
+                    และเทคโนโลยีแบบอัตโนมัติด้วย AI
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <div
+                id="authStatus"
+                class="hidden items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2"
+              >
+                <div class="text-right">
+                  <p class="text-[11px] text-gray-500">Signed In</p>
+                  <p
+                    id="authUsername"
+                    class="text-sm font-semibold text-gray-700"
+                  >
+                    -
+                  </p>
+                </div>
+                <button
+                  id="logoutBtn"
+                  type="button"
+                  class="inline-flex items-center justify-center gap-2 rounded-lg border border-danger-200 bg-danger-50 px-3 py-2.5 text-danger-600 transition-all duration-300 hover:bg-danger-100 focus:outline-none focus:ring-4 focus:ring-danger-200"
+                  title="ออกจากระบบ"
+                  aria-label="ออกจากระบบ"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h5a2 2 0 012 2v1"
+                    />
+                  </svg>
+                  <span class="hidden sm:inline">ออกจากระบบ</span>
+                </button>
+              </div>
+              <div class="text-right hidden sm:block">
+                <p class="text-xs text-gray-500">Last Updated</p>
+                <p class="text-sm font-semibold text-gray-700" id="lastUpdated">
+                  -
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Login Overlay -->
+      <div
+        id="loginOverlay"
+        class="fixed inset-0 hidden items-center justify-center bg-slate-950/50 px-4 py-8 backdrop-blur-sm z-50"
+        style="display: none; pointer-events: none"
+        aria-hidden="true"
+      >
+        <div
+          class="w-full max-w-md rounded-2xl border border-white/50 bg-white p-6 shadow-2xl shadow-slate-900/20"
+        >
+          <div class="mb-6">
+            <p
+              class="mb-2 inline-flex rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-600"
+            >
+              Admin Access
+            </p>
+            <h2 class="text-2xl font-bold text-gray-900">
+              เข้าสู่ระบบในส่วนของผู้ดูแล
+            </h2>
+            <p class="mt-2 text-sm text-gray-500">
+              กรุณาเข้าสู่ระบบเพื่อจัดการข่าวสาร
+            </p>
+          </div>
+
+          <form id="loginForm" class="space-y-4">
+            <div>
+              <label
+                for="loginUsername"
+                class="mb-2 block text-sm font-semibold text-gray-700"
+                >Username</label
+              >
+              <input
+                id="loginUsername"
+                type="text"
+                autocomplete="username"
+                class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 outline-none transition-all duration-200 focus:border-primary-300 focus:ring-4 focus:ring-primary-100"
+                placeholder="admin"
+                required
+              />
+            </div>
+
+            <div>
+              <label
+                for="loginPassword"
+                class="mb-2 block text-sm font-semibold text-gray-700"
+                >Password</label
+              >
+              <input
+                id="loginPassword"
+                type="password"
+                autocomplete="current-password"
+                class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 outline-none transition-all duration-200 focus:border-primary-300 focus:ring-4 focus:ring-primary-100"
+                placeholder="********"
+                required
+              />
+            </div>
+
+            <div
+              id="loginError"
+              class="hidden rounded-xl border border-danger-200 bg-danger-50 px-4 py-3 text-sm font-medium text-danger-700"
+            ></div>
+
+            <button
+              id="loginSubmitBtn"
+              type="submit"
+              class="btn-ripple btn-shimmer inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-primary-200 transition-all duration-300 hover:bg-primary-700 focus:outline-none focus:ring-4 focus:ring-primary-200"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10 17v1a2 2 0 002 2h7a2 2 0 002-2V6a2 2 0 00-2-2h-7a2 2 0 00-2 2v1M3 12h11m0 0l-3-3m3 3l-3 3"
+                />
+              </svg>
+              <span>เข้าสู่ระบบ</span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div
+        class="flex-1 max-w-[1920px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-6"
+      >
+        <!-- Tabs Navigation -->
+        <div
+          class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 overflow-hidden sticky top-16 z-30"
+        >
+          <div
+            class="flex border-b border-gray-200 overflow-x-auto hide-scrollbar"
+          >
+            <button
+              onclick="switchTab('dashboard')"
+              id="tabDashboard"
+              class="tab-btn active px-6 py-4 text-sm transition-all duration-200 border-b-2 flex items-center gap-2"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 13.5h4.5l2-7 5 11 2-4H21M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"
+                ></path>
+              </svg>
+              <span class="hidden sm:inline">Dashboard</span>
+            </button>
+            <button
+              onclick="switchTab('sources')"
+              id="tabSources"
+              class="tab-btn px-6 py-4 text-sm transition-all duration-200 border-b-2 flex items-center gap-2"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
+                ></path>
+              </svg>
+              <span class="hidden sm:inline">แหล่งข้อมูล</span>
+              <span
+                id="sourcesCountBadge"
+                class="hidden sm:inline-flex items-center justify-center px-2 py-0.5 bg-primary-100 text-primary-700 rounded-full text-xs font-semibold"
+                >0</span
+              >
+            </button>
+            <button
+              onclick="switchTab('articles')"
+              id="tabArticles"
+              class="tab-btn px-6 py-4 text-sm transition-all duration-200 border-b-2 flex items-center gap-2"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                ></path>
+              </svg>
+              <span class="hidden sm:inline">บทความ</span>
+              <span
+                id="articlesCountBadge"
+                class="hidden sm:inline-flex items-center justify-center px-2 py-0.5 bg-primary-100 text-primary-700 rounded-full text-xs font-semibold"
+                >0</span
+              >
+            </button>
+            <button
+              onclick="switchTab('logs')"
+              id="tabLogs"
+              class="tab-btn px-6 py-4 text-sm transition-all duration-200 border-b-2 flex items-center gap-2"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                ></path>
+              </svg>
+              <span class="hidden sm:inline">Logs การดึง</span>
+              <span
+                id="logsCountBadge"
+                class="hidden sm:inline-flex items-center justify-center px-2 py-0.5 bg-primary-100 text-primary-700 rounded-full text-xs font-semibold"
+                >0</span
+              >
+            </button>
+            <button
+              onclick="switchTab('audit')"
+              id="tabAudit"
+              class="tab-btn px-6 py-4 text-sm transition-all duration-200 border-b-2 flex items-center gap-2"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                ></path>
+              </svg>
+              <span class="hidden sm:inline">Audit Log</span>
+              <span
+                id="auditCountBadge"
+                class="hidden sm:inline-flex items-center justify-center px-2 py-0.5 bg-primary-100 text-primary-700 rounded-full text-xs font-semibold"
+                >0</span
+              >
+            </button>
+          </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="hidden" style="display: none">
+          <div
+            class="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center"
+          >
+            <div
+              class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-primary-600 border-t-transparent"
+            ></div>
+            <p class="mt-4 text-gray-600 font-medium">กำลังโหลดข้อมูล...</p>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden">
+          <div
+            class="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center"
+          >
+            <div
+              class="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center"
+            >
+              <svg
+                class="w-10 h-10 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                ></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">
+              ไม่พบข้อมูล
+            </h3>
+            <p class="text-gray-500 mb-6">ยังไม่มีแหล่งข้อมูลในระบบ</p>
+            <button
+              onclick="showAddModal()"
+              id="emptyAddBtn"
+              class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary-50 text-primary-600 border border-primary-200 rounded-lg font-medium hover:bg-primary-100 hover:border-primary-300 transition-all duration-300"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 4v16m8-8H4"
+                ></path>
+              </svg>
+              <span>เพิ่มแหล่งแรก</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- DASHBOARD TAB -->
+        <div id="dashboardSection">
+          <div
+            class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-6"
+          >
+            <div
+              class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+            >
+              <div>
+                <p
+                  class="text-xs font-semibold uppercase tracking-[0.2em] text-primary-500 mb-2"
+                >
+                  System Overview
+                </p>
+                <h2 class="text-2xl font-bold text-gray-900">
+                  ภาพรวมการให้บริการ
+                </h2>
+                <p class="text-sm text-gray-500 mt-1">
+                  สรุปสถานะข่าว การส่งต่อ และสุขภาพของ source
+                </p>
+              </div>
+              <div class="flex flex-col sm:flex-row gap-2">
+                <div
+                  class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-600"
+                >
+                  อัปเดต Dashboard:
+                  <span id="dashboardGeneratedAt" class="font-semibold text-gray-900"
+                    >-</span
+                  >
+                </div>
+                <button
+                  onclick="fetchDashboard()"
+                  class="btn-ripple inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-50 text-gray-600 border border-gray-200 rounded-lg font-medium text-sm hover:bg-gray-100 hover:border-gray-300 focus:ring-4 focus:ring-gray-200 focus:outline-none transition-all duration-300"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 7m0 0C4.404 16.027 3.755 12.98 2.476m8.548 3.523A8.001 8.001 0 0019.424 7m0 0c0-3.547-2.548-7.022-6.025"
+                    ></path>
+                  </svg>
+                  <span>รีเฟร็ช</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div
+            id="dashboardKpis"
+            class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6"
+          ></div>
+
+          <div
+            id="dashboardSourceSummary"
+            class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-6"
+          ></div>
+
+          <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
+            <div
+              class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+            >
+              <div class="px-5 py-4 border-b border-gray-200">
+                <h3 class="font-semibold text-gray-900">แนวโน้ม 7 วัน</h3>
+                <p class="text-xs text-gray-500 mt-1">
+                  เปรียบเทียบจำนวนข่าวที่บันทึกกับรอบ fetch ที่สำเร็จ
+                </p>
+              </div>
+              <div id="dashboardTrends" class="p-5"></div>
+            </div>
+
+            <div
+              class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+            >
+              <div class="px-5 py-4 border-b border-gray-200">
+                <h3 class="font-semibold text-gray-900">ข้อควรตรวจสอบ</h3>
+                <p class="text-xs text-gray-500 mt-1">
+                  สัญญาณที่ควรให้ admin ตรวจต่อก่อนกระทบการให้บริการ
+                </p>
+              </div>
+              <div
+                id="dashboardActionableAlerts"
+                class="divide-y divide-gray-100"
+              ></div>
+            </div>
+          </div>
+
+          <div class="mb-6">
+            <div
+              class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+            >
+              <div
+                class="px-5 py-4 border-b border-gray-200 flex items-center justify-between gap-3"
+              >
+                <div>
+                  <h3 class="font-semibold text-gray-900">Source Health</h3>
+                  <p class="text-xs text-gray-500 mt-1">
+                    ตรวจจากสถานะ active, ผลทดสอบล่าสุด และ fetch log ล่าสุด
+                  </p>
+                </div>
+                <span
+                  id="dashboardSourceHealthCount"
+                  class="text-xs font-semibold text-gray-500"
+                  >-</span
+                >
+              </div>
+              <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-sm text-left min-w-[900px]">
+                  <thead class="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th class="px-4 py-3 font-semibold text-gray-700">
+                        แหล่งข่าว
+                      </th>
+                      <th class="px-4 py-3 font-semibold text-gray-700">
+                        ประเภท
+                      </th>
+                      <th class="px-4 py-3 font-semibold text-gray-700 text-center">
+                        สถานะ
+                      </th>
+                      <th class="px-4 py-3 font-semibold text-gray-700 text-center">
+                        ข่าว 7 วัน
+                      </th>
+                      <th class="px-4 py-3 font-semibold text-gray-700 text-center">
+                        Success 7 วัน
+                      </th>
+                      <th class="px-4 py-3 font-semibold text-gray-700">
+                        Fetch ล่าสุด
+                      </th>
+                      <th class="px-4 py-3 font-semibold text-gray-700">
+                        Health
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody
+                    id="dashboardSourceHealthBody"
+                    class="divide-y divide-gray-200"
+                  ></tbody>
+                </table>
+              </div>
+              <div
+                id="dashboardSourceHealthPaginationContainer"
+                class="hidden px-5 py-4 border-t border-gray-200 bg-gray-50"
+              >
+                <div
+                  class="flex flex-col sm:flex-row justify-between items-center gap-4"
+                >
+                  <div
+                    id="dashboardSourceHealthPaginationInfo"
+                    class="text-sm text-gray-600"
+                  ></div>
+                  <div
+                    id="dashboardSourceHealthPaginationControls"
+                    class="flex gap-1 flex-wrap justify-center"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SOURCES TAB -->
+        <div id="sourcesSection" class="hidden">
+          <!-- Toolbar -->
+          <div
+            class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6"
+            id="sourcesToolbar"
+          >
+            <div class="flex flex-col sm:flex-row gap-4">
+              <div class="flex-1 relative">
+                <input
+                  type="text"
+                  id="searchInput"
+                  placeholder="ค้นหาแหล่งข้อมูล..."
+                  class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-200 focus:border-primary-300 outline-none transition-all duration-200 bg-gray-50 focus:bg-white"
+                />
+                <svg
+                  class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  ></path>
+                </svg>
+              </div>
+              <div class="flex gap-2">
+                <button
+                  onclick="showAddModal()"
+                  class="btn-ripple btn-shimmer inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-success-50 text-success-600 border border-success-200 rounded-lg font-medium text-sm hover:bg-success-100 hover:border-success-300 focus:ring-4 focus:ring-success-200 focus:outline-none transition-all duration-300"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 4v16m8-8H4"
+                    ></path>
+                  </svg>
+                  <span>เพิ่มแหล่ง</span>
+                </button>
+                <button
+                  onclick="fetchData()"
+                  class="btn-ripple inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-50 text-gray-600 border border-gray-200 rounded-lg font-medium text-sm hover:bg-gray-100 hover:border-gray-300 focus:ring-4 focus:ring-gray-200 focus:outline-none transition-all duration-300"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 7m0 0C4.404 16.027 3.755 12.98 2.476m8.548 3.523A8.001 8.001 0 0019.424 7m0 0c0-3.547-2.548-7.022-6.025-6.025"
+                    ></path>
+                  </svg>
+                  <span>รีเฟร็ช</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sources Grid -->
+          <div
+            id="sourcesGrid"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
+          ></div>
+
+          <!-- Sources Pagination -->
+          <div
+            id="sourcesPaginationContainer"
+            class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mt-6 hidden"
+          >
+            <div
+              class="flex flex-col sm:flex-row justify-between items-center gap-4"
+            >
+              <div
+                id="sourcesPaginationInfo"
+                class="text-sm text-gray-600"
+              ></div>
+              <div
+                id="sourcesPaginationControls"
+                class="flex gap-1 flex-wrap justify-center"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ARTICLES TAB -->
+        <div id="articlesSection" class="hidden">
+          <!-- Filters -->
+          <div
+            class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6"
+          >
+            <div class="flex flex-col lg:flex-row gap-4">
+              <div class="flex-1 relative">
+                <input
+                  type="text"
+                  id="articleSearch"
+                  placeholder="ค้นหาหัวข้อ/สรุป..."
+                  class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-200 focus:border-primary-300 outline-none transition-all duration-200 bg-gray-50 focus:bg-white"
+                />
+                <svg
+                  class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  ></path>
+                </svg>
+              </div>
+              <div class="flex gap-2 flex-wrap">
+                <select
+                  id="articleSourceFilter"
+                  class="w-full sm:w-auto sm:min-w-[11rem] px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-200 focus:border-primary-300 outline-none bg-white transition-all duration-200 cursor-pointer hover:border-primary-300"
+                >
+                  <option value="">ทุกแหล่ง</option>
+                </select>
+                <select
+                  id="articleLineStatusFilter"
+                  class="w-full sm:w-auto sm:min-w-[9rem] px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-200 focus:border-primary-300 outline-none bg-white transition-all duration-200 cursor-pointer hover:border-primary-300"
+                >
+                  <option value="">ทุกสถานะ</option>
+                  <option value="sent">ส่งแล้ว</option>
+                  <option value="not_sent">ยังไม่ส่ง</option>
+                </select>
+                <button
+                  onclick="resetFilters()"
+                  class="btn-ripple inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-50 text-gray-600 border border-gray-200 rounded-lg font-medium text-sm hover:bg-gray-100 hover:border-gray-300 focus:ring-4 focus:ring-gray-200 focus:outline-none transition-all duration-300"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 7m0 0C4.404 16.027 3.755 12.98 2.476m8.548 3.523A8.001 8.001 0 0019.424 7m0 0c0-3.547-2.548-7.022-6.025-6.025"
+                    ></path>
+                  </svg>
+                  <span>รีเฟร็ช</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Articles Table -->
+          <div
+            class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6"
+          >
+            <div class="overflow-x-auto custom-scrollbar">
+              <table class="w-full text-sm text-left">
+                <thead class="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th class="px-4 py-3 font-semibold text-gray-700 w-16">
+                      ID
+                    </th>
+                    <th class="px-4 py-3 font-semibold text-gray-700 w-40">
+                      แหล่ง
+                    </th>
+                    <th class="px-4 py-3 font-semibold text-gray-700">
+                      หัวข้อ
+                    </th>
+                    <th class="px-4 py-3 font-semibold text-gray-700 w-28">
+                      สถานะ
+                    </th>
+                    <th class="px-4 py-3 font-semibold text-gray-700 w-36">
+                      วันที่ตีพิมพ์
+                    </th>
+                    <th class="px-4 py-3 font-semibold text-gray-700 w-36">
+                      บันทึกเมื่อ
+                    </th>
+                  </tr>
+                </thead>
+                <tbody
+                  id="articlesBody"
+                  class="divide-y divide-gray-200"
+                ></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Articles Pagination -->
+          <div
+            id="articlesPaginationContainer"
+            class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hidden"
+          >
+            <div
+              class="flex flex-col sm:flex-row justify-between items-center gap-4"
+            >
+              <div
+                id="articlesPaginationInfo"
+                class="text-sm text-gray-600"
+              ></div>
+              <div
+                id="articlesPaginationControls"
+                class="flex gap-1 flex-wrap justify-center"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LOGS TAB -->
+        <div id="logsSection" class="hidden">
+          <!-- Logs Toolbar -->
+          <div
+            class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6"
+          >
+            <div class="flex flex-col sm:flex-row gap-4 justify-between">
+              <div class="flex-1 relative">
+                <input
+                  type="text"
+                  id="logsSearchInput"
+                  placeholder="ค้นหา logs..."
+                  class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-200 focus:border-primary-300 outline-none transition-all duration-200 bg-gray-50 focus:bg-white"
+                />
+                <svg
+                  class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  ></path>
+                </svg>
+              </div>
+              <div class="flex flex-wrap items-center gap-3">
+                <button
+                  id="manualFetchBtn"
+                  type="button"
+                  onclick="runManualFetch()"
+                  class="btn-ripple btn-shimmer inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-primary-50 text-primary-600 border border-primary-200 rounded-lg font-medium text-sm hover:bg-primary-100 hover:border-primary-300 focus:ring-4 focus:ring-primary-200 focus:outline-none transition-all duration-300"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    ></path>
+                  </svg>
+                  <span id="manualFetchBtnLabel">รันตอนนี้</span>
+                </button>
+                <button
+                  onclick="resetLogsView()"
+                  class="btn-ripple inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-50 text-gray-600 border border-gray-200 rounded-lg font-medium text-sm hover:bg-gray-100 hover:border-gray-300 focus:ring-4 focus:ring-gray-200 focus:outline-none transition-all duration-300"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 7m0 0C4.404 16.027 3.755 12.98 2.476m8.548 3.523A8.001 8.001 0 0019.424 7m0 0c0-3.547-2.548-7.022-6.025-6.025"
+                    ></path>
+                  </svg>
+                  <span>รีเฟร็ช</span>
+                </button>
+                <p
+                  id="manualFetchStatus"
+                  class="hidden text-xs text-gray-500 sm:max-w-xs"
+                >
+                  ตรวจ source ตามลำดับแบบวนรอบจนกว่าจะเจอข่าวใหม่หรือครบทุกแหล่ง
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Logs Table -->
+          <div
+            class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6"
+          >
+            <div class="overflow-x-auto custom-scrollbar">
+              <table
+                class="w-full min-w-[1220px] table-fixed text-sm text-left"
+              >
+                <colgroup>
+                  <col class="w-40" />
+                  <col class="w-48" />
+                  <col class="w-20" />
+                  <col class="w-20" />
+                  <col class="w-28" />
+                  <col class="w-28" />
+                  <col class="w-24" />
+                  <col class="w-24" />
+                  <col class="w-28" />
+                  <col class="w-24" />
+                </colgroup>
+                <thead class="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th class="px-4 py-3 font-semibold text-gray-700">เวลา</th>
+                    <th class="px-4 py-3 font-semibold text-gray-700">แหล่ง</th>
+                    <th
+                      class="px-4 py-3 font-semibold text-gray-700 text-center"
+                    >
+                      พบ
+                    </th>
+                    <th
+                      class="px-4 py-3 font-semibold text-gray-700 text-center"
+                    >
+                      ใหม่
+                    </th>
+                    <th
+                      class="px-4 py-3 font-semibold text-gray-700 text-center"
+                    >
+                      Database
+                    </th>
+                    <th class="px-4 py-3 font-semibold text-gray-700">
+                      Telegram
+                    </th>
+                    <th class="px-4 py-3 font-semibold text-gray-700">
+                      WordPress
+                    </th>
+                    <th class="px-4 py-3 font-semibold text-gray-700">LINE</th>
+                    <th class="px-4 py-3 font-semibold text-gray-700">สถานะ</th>
+                    <th
+                      class="px-4 py-3 font-semibold text-gray-700 text-center"
+                    >
+                      ใช้เวลา
+                    </th>
+                  </tr>
+                </thead>
+                <tbody id="logsBody" class="divide-y divide-gray-200"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Logs Pagination -->
+          <div
+            id="logsPaginationContainer"
+            class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hidden"
+          >
+            <div
+              class="flex flex-col sm:flex-row justify-between items-center gap-4"
+            >
+              <div id="logsPaginationInfo" class="text-sm text-gray-600"></div>
+              <div
+                id="logsPaginationControls"
+                class="flex gap-1 flex-wrap justify-center"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AUDIT TAB -->
+        <div id="auditSection" class="hidden">
+          <div
+            class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6"
+          >
+            <div class="flex flex-col sm:flex-row gap-4 justify-between">
+              <div class="flex-1 relative">
+                <input
+                  type="text"
+                  id="auditSearchInput"
+                  placeholder="ค้นหา user, action หรือ target..."
+                  class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-200 focus:border-primary-300 outline-none transition-all duration-200 bg-gray-50 focus:bg-white"
+                />
+                <svg
+                  class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  ></path>
+                </svg>
+              </div>
+              <div class="flex flex-wrap items-center gap-3">
+                <select
+                  id="auditActionFilter"
+                  class="px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-200 focus:border-primary-300 outline-none bg-white transition-all duration-200 cursor-pointer hover:border-primary-300"
+                >
+                  <option value="">ทุก action</option>
+                  <option value="login">login</option>
+                  <option value="logout">logout</option>
+                  <option value="create">create</option>
+                  <option value="update">update</option>
+                  <option value="delete">delete</option>
+                  <option value="toggle">toggle</option>
+                  <option value="test">test</option>
+                  <option value="test_failed">test_failed</option>
+                  <option value="run_now">run_now</option>
+                  <option value="run_now_failed">run_now_failed</option>
+                </select>
+                <button
+                  onclick="resetAuditView()"
+                  class="btn-ripple inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-50 text-gray-600 border border-gray-200 rounded-lg font-medium text-sm hover:bg-gray-100 hover:border-gray-300 focus:ring-4 focus:ring-gray-200 focus:outline-none transition-all duration-300"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 7m0 0C4.404 16.027 3.755 12.98 2.476m8.548 3.523A8.001 8.001 0 0019.424 7m0 0c0-3.547-2.548-7.022-6.025-6.025"
+                    ></path>
+                  </svg>
+                  <span>รีเฟร็ช</span>
+                </button>
+                <p class="hidden text-xs text-gray-500 sm:max-w-xs">
+                  แสดงรายการ audit ล่าสุดจากผู้ดูแลระบบเพื่อใช้ตรวจสอบย้อนหลัง
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6"
+          >
+            <div class="overflow-x-auto custom-scrollbar">
+              <table
+                class="w-full min-w-[1120px] table-fixed text-sm text-left"
+              >
+                <colgroup>
+                  <col class="w-44" />
+                  <col class="w-32" />
+                  <col class="w-36" />
+                  <col class="w-60" />
+                  <col class="w-[420px]" />
+                </colgroup>
+                <thead class="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th class="px-4 py-3 font-semibold text-gray-700">เวลา</th>
+                    <th class="px-4 py-3 font-semibold text-gray-700">
+                      ผู้ใช้
+                    </th>
+                    <th class="px-4 py-3 font-semibold text-gray-700">
+                      Action
+                    </th>
+                    <th class="px-4 py-3 font-semibold text-gray-700">
+                      Target
+                    </th>
+                    <th class="px-4 py-3 font-semibold text-gray-700">
+                      รายละเอียด
+                    </th>
+                  </tr>
+                </thead>
+                <tbody id="auditBody" class="divide-y divide-gray-200"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div
+            id="auditPaginationContainer"
+            class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hidden"
+          >
+            <div
+              class="flex flex-col sm:flex-row justify-between items-center gap-4"
+            >
+              <div id="auditPaginationInfo" class="text-sm text-gray-600"></div>
+              <div
+                id="auditPaginationControls"
+                class="flex gap-1 flex-wrap justify-center"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div
+      id="modalOverlay"
+      class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4 backdrop-blur-sm"
+      style="display: none; pointer-events: none"
+      aria-hidden="true"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+      >
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h2 id="modalTitle" class="text-xl font-bold text-gray-900">
+              เพิ่มแหล่งข้อมูลใหม่
+            </h2>
+            <button
+              onclick="closeModal()"
+              class="inline-flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-lg hover:bg-gray-100"
+            >
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <form id="sourceForm">
+            <input type="hidden" id="sourceId" />
+            <input type="hidden" id="formSourceSlug" />
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2"
+                  >ชื่อแหล่ง *</label
+                >
+                <input
+                  type="text"
+                  id="sourceName"
+                  required
+                  class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-200 focus:border-primary-300 outline-none transition-all duration-200 bg-gray-50 focus:bg-white"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2"
+                  >Slug *</label
+                >
+                <input
+                  type="text"
+                  id="sourceSlug"
+                  required
+                  pattern="[a-z0-9-]+"
+                  title="ใช้ตัวพิมพ์พิเศษ์, ตัวเลขและขีดอย่างเดียว"
+                  class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-200 focus:border-primary-300 outline-none transition-all duration-200 bg-gray-50 focus:bg-white"
+                />
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >URL *</label
+              >
+              <textarea
+                id="sourceUrl"
+                required
+                placeholder="สามารถใส่หลาย URL คั่นด้วย comma"
+                rows="3"
+                class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-200 focus:border-primary-300 outline-none resize-y transition-all duration-200 bg-gray-50 focus:bg-white"
+              ></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div>
+                <div class="flex items-center justify-between gap-3 mb-2">
+                  <label class="block text-sm font-medium text-gray-700"
+                    >วิธีดึงข้อมูล *</label
+                  >
+                  <button
+                    type="button"
+                    onclick="showFetchMethodInfo()"
+                    class="inline-flex items-center gap-1.5 text-xs font-medium text-primary-600 hover:text-primary-700 transition-colors"
+                  >
+                    <svg
+                      class="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <!-- <span>Info</span> -->
+                  </button>
+                </div>
+                <select
+                  id="fetchMethod"
+                  required
+                  class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-200 focus:border-primary-300 outline-none bg-white transition-all duration-200 cursor-pointer hover:border-primary-300"
+                >
+                  <optgroup label="พร้อมใช้งาน">
+                    <option value="rss">RSS</option>
+                    <option value="html">HTML</option>
+                    <option value="api">API (WordPress API / Generic JSON)</option>
+                  </optgroup>
+                  <optgroup label="ยังไม่รองรับ">
+                    <option value="" disabled>JSON Feed</option>
+                    <option value="" disabled>GraphQL API</option>
+                    <option value="" disabled>Atom Feed</option>
+                    <option value="" disabled>Sitemap XML</option>
+                  </optgroup>
+                </select>
+              </div>
+              <div id="sourceStatusField">
+                <label class="block text-sm font-medium text-gray-700 mb-2"
+                  >สถานะ</label
+                >
+                <select
+                  id="sourceActive"
+                  class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-200 focus:border-primary-300 outline-none bg-white transition-all duration-200 cursor-pointer hover:border-primary-300"
+                >
+                  <option value="1">Active (ใช้งาน)</option>
+                  <option value="0">Inactive (ปิด)</option>
+                </select>
+                <p id="sourceStatusHint" class="mt-2 text-xs text-gray-500">
+                  แหล่งข่าวใหม่จะเริ่มเป็น Inactive ก่อน
+                  และควรทดสอบการดึงให้ผ่านก่อนเปิดใช้งาน
+                </p>
+              </div>
+            </div>
+
+            <div id="apiConfigSection" class="hidden mb-6 space-y-4">
+              <div
+                class="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-4"
+              >
+                <div>
+                  <label
+                    for="apiVariant"
+                    class="block text-sm font-medium text-gray-700 mb-2"
+                    >รูปแบบ API *</label
+                  >
+                  <select
+                    id="apiVariant"
+                    class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-200 focus:border-primary-300 outline-none bg-white transition-all duration-200 cursor-pointer hover:border-primary-300"
+                  >
+                    <option value="wordpress">WordPress API</option>
+                    <option value="generic_json">Generic JSON API</option>
+                  </select>
+                  <p
+                    id="apiVariantHint"
+                    class="mt-2 text-xs text-gray-500"
+                  >
+                    ใช้กับ endpoint แบบ `/wp-json/wp/v2/posts`
+                  </p>
+                </div>
+
+                <div id="genericJsonMappingSection" class="hidden space-y-4">
+                  <div
+                    class="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-800"
+                  >
+                    กรอก mapping แบบ dot-path เช่น `data.items`, `title.rendered`,
+                    `url`, `published_at`
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label
+                        for="jsonItemsPath"
+                        class="block text-sm font-medium text-gray-700 mb-2"
+                        >Items Path *</label
+                      >
+                      <input
+                        id="jsonItemsPath"
+                        type="text"
+                        placeholder="data.items"
+                        class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-200 focus:border-primary-300 outline-none transition-all duration-200 bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        for="jsonTitleField"
+                        class="block text-sm font-medium text-gray-700 mb-2"
+                        >Title Field *</label
+                      >
+                      <input
+                        id="jsonTitleField"
+                        type="text"
+                        placeholder="title"
+                        class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-200 focus:border-primary-300 outline-none transition-all duration-200 bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        for="jsonLinkField"
+                        class="block text-sm font-medium text-gray-700 mb-2"
+                        >Link Field *</label
+                      >
+                      <input
+                        id="jsonLinkField"
+                        type="text"
+                        placeholder="url"
+                        class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-200 focus:border-primary-300 outline-none transition-all duration-200 bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        for="jsonDateField"
+                        class="block text-sm font-medium text-gray-700 mb-2"
+                        >Date Field *</label
+                      >
+                      <input
+                        id="jsonDateField"
+                        type="text"
+                        placeholder="published_at"
+                        class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-200 focus:border-primary-300 outline-none transition-all duration-200 bg-white"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label
+                      for="jsonSummaryField"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                      >Summary Field</label
+                    >
+                    <input
+                      id="jsonSummaryField"
+                      type="text"
+                      placeholder="summary"
+                      class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-200 focus:border-primary-300 outline-none transition-all duration-200 bg-white"
+                    />
+                    <p class="mt-2 text-xs text-gray-500">
+                      เว้นว่างได้ ระบบจะใช้ title แทนถ้าไม่พบ summary
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex justify-end gap-3">
+              <button
+                type="button"
+                onclick="closeModal()"
+                class="inline-flex items-center justify-center px-5 py-2.5 text-gray-600 border border-gray-200 rounded-lg font-medium text-sm hover:bg-gray-50 hover:border-gray-300 focus:ring-4 focus:ring-gray-200 focus:outline-none transition-all duration-300"
+              >
+                <span>ยกเลิก</span>
+              </button>
+              <button
+                type="submit"
+                id="submitBtn"
+                class="btn-ripple btn-shimmer inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-primary-50 text-primary-600 border border-primary-200 rounded-lg font-medium text-sm hover:bg-primary-100 hover:border-primary-300 focus:ring-4 focus:ring-primary-200 focus:outline-none transition-all duration-300 min-w-[120px]"
+              >
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 13l4 4L19 7"
+                  ></path>
+                </svg>
+                <span>บันทึก</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="fetchMethodInfoOverlay"
+      class="fixed inset-0 bg-black/50 z-[60] hidden items-center justify-center p-4 backdrop-blur-sm"
+      style="display: none; pointer-events: none"
+      aria-hidden="true"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+      >
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-5">
+            <h2 class="text-xl font-bold text-gray-900">
+              รูปแบบข้อมูลที่รองรับ
+            </h2>
+            <button
+              type="button"
+              onclick="closeFetchMethodInfo()"
+              class="inline-flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-lg hover:bg-gray-100"
+            >
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <div class="space-y-4 text-sm text-gray-700">
+            <div class="rounded-xl border border-blue-200 bg-blue-50 p-4">
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <h3 class="font-semibold text-gray-900">RSS</h3>
+                <span
+                  class="shrink-0 px-2 py-1 rounded-full text-[11px] font-semibold bg-blue-100 text-blue-700 border border-blue-200"
+                  >พร้อมใช้งาน</span
+                >
+              </div>
+              <p>
+                ใช้กับ feed มาตรฐาน เช่น `/feed/`, `.rss`, หรือ `.xml`
+                ที่คืนรายการข่าวโดยตรง ระบบจะใช้ generic RSS fetcher ทันที
+              </p>
+              <p class="mt-2 text-xs text-gray-500">
+                ตัวอย่าง: `https://example.com/feed/`
+              </p>
+            </div>
+
+            <div class="rounded-xl border border-indigo-200 bg-indigo-50 p-4">
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <h3 class="font-semibold text-gray-900">API (WordPress API)</h3>
+                <span
+                  class="shrink-0 px-2 py-1 rounded-full text-[11px] font-semibold bg-indigo-100 text-indigo-700 border border-indigo-200"
+                  >พร้อมใช้งาน</span
+                >
+              </div>
+              <p>
+                ใช้กับ WordPress REST API เช่น `/wp-json/wp/v2/posts` ระบบจะใช้
+                generic WordPress API fetcher ได้ทันที
+              </p>
+              <p class="mt-2 text-xs text-gray-500">
+                ตัวอย่าง: `https://example.com/wp-json/wp/v2/posts`
+              </p>
+            </div>
+
+            <div class="rounded-xl border border-cyan-200 bg-cyan-50 p-4">
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <h3 class="font-semibold text-gray-900">API (Generic JSON)</h3>
+                <span
+                  class="shrink-0 px-2 py-1 rounded-full text-[11px] font-semibold bg-cyan-100 text-cyan-700 border border-cyan-200"
+                  >พร้อมใช้งาน</span
+                >
+              </div>
+              <p>
+                ใช้กับ public JSON API ที่มี endpoint เดียว และสามารถระบุ
+                mapping แบบ dot-path ได้ชัดเจน
+              </p>
+              <div
+                class="mt-3 rounded-lg border border-cyan-200 bg-white/70 p-3 text-xs text-cyan-900 space-y-1"
+              >
+                <div><span class="font-semibold">items_path:</span> `data.items`</div>
+                <div><span class="font-semibold">title_field:</span> `title`</div>
+                <div><span class="font-semibold">link_field:</span> `url`</div>
+                <div><span class="font-semibold">date_field:</span> `published_at`</div>
+                <div><span class="font-semibold">summary_field:</span> `summary`</div>
+              </div>
+            </div>
+
+            <div class="rounded-xl border border-purple-200 bg-purple-50 p-4">
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <h3 class="font-semibold text-gray-900">HTML</h3>
+                <span
+                  class="shrink-0 px-2 py-1 rounded-full text-[11px] font-semibold bg-purple-100 text-purple-700 border border-purple-200"
+                  >ต้องมี fetcher เฉพาะ</span
+                >
+              </div>
+              <p>
+                ใช้กับหน้าเว็บทั่วไปที่ต้อง parse จาก HTML ปัจจุบันระบบยังไม่ทำ
+                generic HTML fetcher ดังนั้นต้องมี custom fetcher ใน Python ก่อน
+              </p>
+            </div>
+
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4">
+              <h3 class="font-semibold text-gray-900 mb-2">
+                รูปแบบที่ยังไม่รองรับ
+              </h3>
+              <div class="flex flex-wrap gap-2 text-xs">
+                <span
+                  class="px-2 py-1 rounded-full bg-white border border-gray-200 text-gray-600"
+                  >JSON Feed</span
+                >
+                <span
+                  class="px-2 py-1 rounded-full bg-white border border-gray-200 text-gray-600"
+                  >GraphQL API</span
+                >
+                <span
+                  class="px-2 py-1 rounded-full bg-white border border-gray-200 text-gray-600"
+                  >Atom Feed</span
+                >
+                <span
+                  class="px-2 py-1 rounded-full bg-white border border-gray-200 text-gray-600"
+                  >Sitemap XML</span
+                >
+              </div>
+            </div>
+
+            <div class="rounded-xl border border-warning-200 bg-warning-50 p-4">
+              <h3 class="font-semibold text-gray-900 mb-2">หมายเหตุ</h3>
+              <ul class="space-y-1.5 text-sm text-gray-700">
+                <li>source ใหม่จะเริ่มเป็น `Inactive` ก่อนเสมอ</li>
+                <li>ควรกด `ทดสอบ` ให้ผ่านก่อนเปิดใช้งาน</li>
+                <li>
+                  ถ้าแก้ `slug`, `source_url`, หรือ `fetch_method`
+                  ระบบจะบังคับให้ทดสอบใหม่
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div
+      id="toast"
+      class="fixed bottom-5 right-5 px-6 py-4 rounded-xl font-semibold shadow-2xl hidden transform transition-all duration-300 translate-y-4 opacity-0 z-50 flex items-center gap-3 pointer-events-none"
+      style="display: none; pointer-events: none"
+      aria-hidden="true"
+    ></div>
+
+    <script>
+      let sources = [];
+      let allSources = [];
+      let logs = [];
+      let allLogs = [];
+      let auditLogs = [];
+      let allAuditLogs = [];
+      let articles = [];
+      let dashboardOverview = null;
+      let articlePagination = null;
+      let logsPagination = null;
+      let sourcesPagination = null;
+      let auditPagination = null;
+      let dashboardSourceHealthPagination = null;
+      let currentTab = "dashboard";
+      let currentArticlePage = 1;
+      let currentLogsPage = 1;
+      let currentSourcesPage = 1;
+      let currentAuditPage = 1;
+      let currentDashboardSourceHealthPage = 1;
+      const ITEMS_PER_PAGE = 20;
+      const DASHBOARD_SOURCE_HEALTH_PER_PAGE = 20;
+      const AUTH_REQUIRED_ERROR = "AUTH_REQUIRED";
+      let authUser = null;
+      let manualFetchRunning = false;
+      let toastHideTimeout = null;
+
+      function resetTransientUi() {
+        setOverlayVisibility("modalOverlay", false);
+        setOverlayVisibility("loginOverlay", false);
+        setOverlayVisibility("fetchMethodInfoOverlay", false);
+        const toast = document.getElementById("toast");
+        if (toast) {
+          toast.style.display = "none";
+          toast.style.pointerEvents = "none";
+          toast.classList.add("translate-y-4", "opacity-0");
+          toast.setAttribute("aria-hidden", "true");
+        }
+        syncBodyScrollLock();
+      }
+
+      function setOverlayVisibility(elementId, visible, displayMode = "flex") {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+
+        element.classList.toggle("hidden", !visible);
+        element.classList.toggle("flex", visible && displayMode === "flex");
+        element.style.display = visible ? displayMode : "none";
+        element.style.pointerEvents = visible ? "auto" : "none";
+        element.setAttribute("aria-hidden", visible ? "false" : "true");
+      }
+
+      function syncBodyScrollLock() {
+        const overlayIds = [
+          "loginOverlay",
+          "modalOverlay",
+          "fetchMethodInfoOverlay",
+        ];
+        const hasVisibleOverlay = overlayIds.some((elementId) => {
+          const element = document.getElementById(elementId);
+          return (
+            element &&
+            element.getAttribute("aria-hidden") === "false" &&
+            element.style.display !== "none"
+          );
+        });
+
+        document.body.style.overflow = hasVisibleOverlay ? "hidden" : "";
+      }
+
+      function setAuthState(user) {
+        authUser = user || null;
+        const authStatus = document.getElementById("authStatus");
+        const authUsername = document.getElementById("authUsername");
+        if (authUser) {
+          authStatus.classList.remove("hidden");
+          authStatus.classList.add("flex");
+          authUsername.textContent = authUser.username || "-";
+        } else {
+          authStatus.classList.add("hidden");
+          authStatus.classList.remove("flex");
+          authUsername.textContent = "-";
+        }
+      }
+
+      function showLoginOverlay(message = "") {
+        const overlay = document.getElementById("loginOverlay");
+        const errorBox = document.getElementById("loginError");
+        setOverlayVisibility("loginOverlay", true);
+        syncBodyScrollLock();
+
+        if (message) {
+          errorBox.textContent = message;
+          errorBox.classList.remove("hidden");
+        } else {
+          errorBox.textContent = "";
+          errorBox.classList.add("hidden");
+        }
+      }
+
+      function hideLoginOverlay() {
+        const errorBox = document.getElementById("loginError");
+        setOverlayVisibility("loginOverlay", false);
+        errorBox.textContent = "";
+        errorBox.classList.add("hidden");
+        syncBodyScrollLock();
+      }
+
+      function handleUnauthorized(message = "กรุณาเข้าสู่ระบบใหม่อีกครั้ง") {
+        setAuthState(null);
+        showLoginOverlay(message);
+      }
+
+      function isAuthError(error) {
+        return error && error.message === AUTH_REQUIRED_ERROR;
+      }
+
+      async function apiFetch(url, options = {}) {
+        const response = await fetch(url, {
+          credentials: "same-origin",
+          ...options,
+          headers: {
+            ...(options.headers || {}),
+          },
+        });
+
+        if (response.status === 401) {
+          handleUnauthorized();
+          throw new Error(AUTH_REQUIRED_ERROR);
+        }
+
+        return response;
+      }
+
+      async function checkAuth() {
+        try {
+          const response = await fetch("/api/auth/me", {
+            credentials: "same-origin",
+          });
+
+          if (response.status === 401) {
+            handleUnauthorized();
+            return false;
+          }
+
+          const result = await response.json();
+          if (result.success) {
+            setAuthState(result.data);
+            hideLoginOverlay();
+            return true;
+          }
+
+          handleUnauthorized(
+            result.error || "ไม่สามารถตรวจสอบสิทธิ์การใช้งานได้",
+          );
+          return false;
+        } catch (error) {
+          console.error("Auth check failed:", error);
+          handleUnauthorized("ไม่สามารถเชื่อมต่อระบบยืนยันตัวตนได้");
+          return false;
+        }
+      }
+
+      async function login(username, password) {
+        const response = await fetch("/api/auth/login", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
+        });
+
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+          throw new Error(result.error || "เข้าสู่ระบบไม่สำเร็จ");
+        }
+
+        setAuthState(result.data);
+        hideLoginOverlay();
+      }
+
+      async function logout() {
+        try {
+          await fetch("/api/auth/logout", {
+            method: "POST",
+            credentials: "same-origin",
+          });
+        } catch (error) {
+          console.error("Logout failed:", error);
+        }
+
+        setAuthState(null);
+        showLoginOverlay("ออกจากระบบแล้ว");
+      }
+
+      async function refreshAuthenticatedAppState() {
+        await fetchData();
+        await loadSourceFilter();
+        await fetchBadgesCounts();
+
+        if (currentTab === "dashboard") {
+          await fetchDashboard();
+        } else if (currentTab === "articles") {
+          await fetchArticles(currentArticlePage || 1);
+        } else if (currentTab === "logs") {
+          await fetchLogs(currentLogsPage || 1);
+        } else if (currentTab === "audit") {
+          await fetchAuditLogs(currentAuditPage || 1);
+        }
+
+        updateLastUpdated();
+      }
+
+      async function bootstrapApp() {
+        resetTransientUi();
+        const authenticated = await checkAuth();
+        if (!authenticated) {
+          return;
+        }
+
+        await refreshAuthenticatedAppState();
+      }
+
+      function setManualFetchState(running, message = "") {
+        manualFetchRunning = running;
+        const button = document.getElementById("manualFetchBtn");
+        const label = document.getElementById("manualFetchBtnLabel");
+        const status = document.getElementById("manualFetchStatus");
+
+        if (button) {
+          button.disabled = running;
+          button.classList.toggle("opacity-60", running);
+          button.classList.toggle("cursor-not-allowed", running);
+        }
+
+        if (label) {
+          label.textContent = running ? "กำลังรัน..." : "รันตอนนี้";
+        }
+
+        if (status && message) {
+          status.textContent = message;
+        }
+      }
+
+      async function refreshAfterManualFetch() {
+        await fetchDashboard();
+        await fetchData();
+        await fetchArticles(currentArticlePage || 1);
+        await fetchLogs(currentLogsPage || 1);
+        await fetchAuditLogs(currentAuditPage || 1);
+        await fetchBadgesCounts();
+        updateLastUpdated();
+      }
+
+      async function runManualFetch() {
+        if (manualFetchRunning) {
+          return;
+        }
+
+        const confirmed = window.confirm(
+          "เริ่มรันรอบดึงข่าวตอนนี้ใช่หรือไม่ ระบบจะตรวจ source ตามลำดับจนกว่าจะเจอข่าวใหม่หรือครบทุกแหล่ง",
+        );
+        if (!confirmed) {
+          return;
+        }
+
+        setManualFetchState(
+          true,
+          "กำลังรันรอบดึงข่าว กรุณารอสักครู่จนกว่าระบบจะจบรอบนี้",
+        );
+
+        try {
+          const response = await apiFetch("/api/fetch/run-now", {
+            method: "POST",
+          });
+          const result = await response.json();
+
+          if (!result.success) {
+            throw new Error(result.error || "Manual fetch failed");
+          }
+
+          const data = result.data || {};
+          const durationSeconds = Math.max(
+            1,
+            Math.round((Number(data.duration_ms) || 0) / 1000),
+          );
+          const sourceBefore = Number.isFinite(data.source_index_before)
+            ? data.source_index_before + 1
+            : "-";
+          const sourceAfter = Number.isFinite(data.source_index_after)
+            ? data.source_index_after + 1
+            : "-";
+
+          setManualFetchState(
+            false,
+            `รันล่าสุดสำเร็จ ใช้เวลา ${durationSeconds} วินาที เริ่มที่ source ${sourceBefore} และรอบถัดไปจะเริ่มที่ source ${sourceAfter}`,
+          );
+          showToast("รันรอบดึงข่าวสำเร็จ", "success");
+          await refreshAfterManualFetch();
+        } catch (error) {
+          if (isAuthError(error)) {
+            setManualFetchState(
+              false,
+              "สิทธิ์การใช้งานหมดอายุ กรุณาเข้าสู่ระบบใหม่",
+            );
+            return;
+          }
+
+          console.error("Manual fetch failed:", error);
+          setManualFetchState(
+            false,
+            "รันไม่สำเร็จ กรุณาตรวจสอบ logs ล่าสุดหรือ config ของระบบ",
+          );
+          showToast(error.message || "รันรอบดึงข่าวไม่สำเร็จ", "error");
+        }
+      }
+
+      // Switch between tabs
+      function switchTab(tab) {
+        currentTab = tab;
+
+        // Update tab buttons
+        document
+          .querySelectorAll(".tab-btn")
+          .forEach((btn) => btn.classList.remove("active"));
+        const activeBtn = document.getElementById(
+          "tab" + tab.charAt(0).toUpperCase() + tab.slice(1),
+        );
+        if (activeBtn) activeBtn.classList.add("active");
+
+        // Show/hide sections and their pagination containers
+        document
+          .getElementById("dashboardSection")
+          .classList.toggle("hidden", tab !== "dashboard");
+        document
+          .getElementById("sourcesSection")
+          .classList.toggle("hidden", tab !== "sources");
+        document
+          .getElementById("sourcesPaginationContainer")
+          .classList.toggle("hidden", tab !== "sources");
+        document
+          .getElementById("articlesSection")
+          .classList.toggle("hidden", tab !== "articles");
+        document
+          .getElementById("articlesPaginationContainer")
+          .classList.toggle("hidden", tab !== "articles");
+        document
+          .getElementById("logsSection")
+          .classList.toggle("hidden", tab !== "logs");
+        document
+          .getElementById("logsPaginationContainer")
+          .classList.toggle("hidden", tab !== "logs");
+        document
+          .getElementById("auditSection")
+          .classList.toggle("hidden", tab !== "audit");
+        document
+          .getElementById("auditPaginationContainer")
+          .classList.toggle("hidden", tab !== "audit");
+        document
+          .getElementById("sourcesToolbar")
+          .classList.toggle("hidden", tab !== "sources");
+        if (tab !== "sources") {
+          document.getElementById("emptyState").classList.add("hidden");
+        }
+
+        // Load data
+        if (tab === "dashboard") {
+          fetchDashboard();
+        } else if (tab === "sources" && allSources.length === 0) {
+          fetchData();
+        } else if (tab === "articles" && articles.length === 0) {
+          fetchArticles();
+        } else if (tab === "logs" && allLogs.length === 0) {
+          fetchLogs();
+        } else if (tab === "audit" && allAuditLogs.length === 0) {
+          fetchAuditLogs();
+        }
+      }
+
+      async function fetchDashboard() {
+        showLoading();
+        try {
+          const response = await apiFetch("/api/dashboard/overview");
+          const result = await response.json();
+          if (result.success) {
+            dashboardOverview = result.data || {};
+            renderDashboard(dashboardOverview);
+          } else {
+            showToast("Failed to load dashboard", "error");
+          }
+        } catch (error) {
+          if (isAuthError(error)) {
+            return;
+          }
+          console.error("Error:", error);
+          showToast("Cannot connect to the server", "error");
+        } finally {
+          hideLoading();
+        }
+      }
+
+      function renderDashboard(data) {
+        const kpis = data.kpis || {};
+        const fetch24h = data.fetch_24h || {};
+        const healthRows = data.source_health || [];
+        const trends = data.trends || {};
+        const actionableAlerts = data.actionable_alerts || [];
+        const generatedAt = document.getElementById("dashboardGeneratedAt");
+        const healthCount = document.getElementById("dashboardSourceHealthCount");
+
+        if (generatedAt) {
+          generatedAt.textContent = data.generated_at
+            ? formatDateTime(data.generated_at)
+            : "-";
+        }
+
+        if (healthCount) {
+          healthCount.textContent = `${healthRows.length.toLocaleString()} sources`;
+        }
+
+        renderDashboardKpis(kpis, fetch24h);
+        renderDashboardSourceSummary(kpis, healthRows);
+        renderDashboardTrends(trends);
+        renderDashboardActionableAlerts(actionableAlerts);
+        renderDashboardSourceHealth(healthRows, currentDashboardSourceHealthPage);
+      }
+
+      function renderDashboardKpis(kpis, fetch24h) {
+        const container = document.getElementById("dashboardKpis");
+        if (!container) return;
+
+        const kpiCards = [
+          {
+            label: "ข่าวทั้งหมด",
+            value: formatNumber(kpis.total_articles),
+            detail: `วันนี้ ${formatNumber(kpis.articles_today)} | 7 วัน ${formatNumber(kpis.articles_last_7_days)}`,
+            tone: "primary",
+          },
+          {
+            label: "ส่ง LINE สำเร็จ",
+            value: formatNumber(kpis.line_sent_total),
+            detail: `Telegram ${formatNumber(kpis.telegram_sent_total)} | WP ${formatNumber(kpis.wordpress_success_total)}`,
+            tone: "success",
+          },
+          {
+            label: "Fetch 24 ชั่วโมง",
+            value: formatNumber(kpis.total_fetches_24h),
+            detail: `สำเร็จ ${formatNumber(fetch24h.success)} | บางส่วน ${formatNumber(fetch24h.partial)} | ล้มเหลว ${formatNumber(fetch24h.failed)}`,
+            tone: "warning",
+          },
+          {
+            label: "Source ที่ควรตรวจ",
+            value: formatNumber(kpis.sources_need_attention),
+            detail: `Active ${formatNumber(kpis.active_sources)} จาก ${formatNumber(kpis.total_sources)} | Success 24h ${formatPercent(kpis.success_rate_24h)}`,
+            tone: "danger",
+          },
+        ];
+
+        const toneClasses = {
+          primary: "bg-primary-50 text-primary-700 border-primary-100",
+          success: "bg-success-50 text-success-700 border-success-100",
+          warning: "bg-warning-50 text-warning-800 border-warning-100",
+          danger: "bg-danger-50 text-danger-700 border-danger-100",
+        };
+
+        container.innerHTML = kpiCards
+          .map(
+            (card) => `
+              <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                <div class="flex items-start justify-between gap-4">
+                  <div>
+                    <p class="text-sm font-medium text-gray-500">${escapeHtml(card.label)}</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">${escapeHtml(card.value)}</p>
+                  </div>
+                  <span class="w-10 h-10 rounded-xl border flex items-center justify-center ${toneClasses[card.tone]}">
+                    <span class="w-2.5 h-2.5 rounded-full bg-current"></span>
+                  </span>
+                </div>
+                <p class="text-xs text-gray-500 mt-4 leading-5">${escapeHtml(card.detail)}</p>
+              </div>
+            `,
+          )
+          .join("");
+      }
+
+      function renderDashboardSourceSummary(kpis, rows) {
+        const container = document.getElementById("dashboardSourceSummary");
+        if (!container) return;
+
+        const methodCounts = rows.reduce((acc, source) => {
+          const method =
+            source.fetch_method === "api" && source.api_variant === "generic_json"
+              ? "Generic JSON API"
+              : source.fetch_method === "api"
+                ? "WP API"
+                : source.fetch_method === "rss"
+                  ? "RSS"
+                  : source.fetch_method === "html"
+                    ? "HTML"
+                    : "อื่น ๆ";
+          acc[method] = (acc[method] || 0) + 1;
+          return acc;
+        }, {});
+
+        const methodItems = Object.entries(methodCounts)
+          .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+          .map(
+            ([method, count]) => `
+              <div class="flex items-center justify-between gap-4 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+                <span class="text-sm font-medium text-gray-600">${escapeHtml(method)}</span>
+                <span class="text-sm font-bold text-gray-900">${formatNumber(count)}</span>
+              </div>
+            `,
+          )
+          .join("");
+
+        container.innerHTML = `
+          <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
+            <div class="min-w-0">
+              <h3 class="font-semibold text-gray-900">ข้อมูลแหล่งข่าว</h3>
+              <p class="text-xs text-gray-500 mt-1">
+                สรุปจำนวน source และวิธีดึงข้อมูลที่ตั้งค่าอยู่ในระบบ
+              </p>
+              <div class="grid grid-cols-3 gap-3 mt-4">
+                <div class="rounded-xl bg-primary-50 border border-primary-100 p-4">
+                  <div class="text-xs font-medium text-primary-600">ทั้งหมด</div>
+                  <div class="text-2xl font-bold text-gray-900 mt-1">${formatNumber(kpis.total_sources)}</div>
+                </div>
+                <div class="rounded-xl bg-success-50 border border-success-100 p-4">
+                  <div class="text-xs font-medium text-success-700">Active</div>
+                  <div class="text-2xl font-bold text-gray-900 mt-1">${formatNumber(kpis.active_sources)}</div>
+                </div>
+                <div class="rounded-xl bg-gray-50 border border-gray-200 p-4">
+                  <div class="text-xs font-medium text-gray-600">Inactive</div>
+                  <div class="text-2xl font-bold text-gray-900 mt-1">${formatNumber(kpis.inactive_sources)}</div>
+                </div>
+              </div>
+            </div>
+            <div class="w-full lg:max-w-xl">
+              <div class="text-xs font-semibold uppercase tracking-[0.16em] text-gray-400 mb-3">
+                วิธีดึงข้อมูล
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                ${methodItems || '<div class="text-sm text-gray-500">ยังไม่มีข้อมูลวิธีดึงข้อมูล</div>'}
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      function renderDashboardTrends(trends) {
+        const container = document.getElementById("dashboardTrends");
+        if (!container) return;
+
+        const articleMap = mapTrendRows(
+          trends.articles_daily || [],
+          "total_articles",
+        );
+        const fetchMap = mapTrendRows(
+          trends.fetch_daily || [],
+          "success_fetches",
+        );
+        const days = getRecentDateKeys(7);
+        const maxValue = Math.max(
+          1,
+          ...days.flatMap((day) => [
+            Number(articleMap[day]) || 0,
+            Number(fetchMap[day]) || 0,
+          ]),
+        );
+
+        container.innerHTML = `
+          <div class="space-y-4">
+            ${days
+              .map((day) => {
+                const articlesCount = Number(articleMap[day]) || 0;
+                const fetchCount = Number(fetchMap[day]) || 0;
+                return `
+                  <div>
+                    <div class="flex items-center justify-between gap-3 text-xs text-gray-500 mb-2">
+                      <span class="font-semibold text-gray-700">${formatDateShort(day)}</span>
+                      <span>ข่าว ${formatNumber(articlesCount)} | fetch สำเร็จ ${formatNumber(fetchCount)}</span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      ${renderTrendBar("ข่าว", articlesCount, maxValue, "bg-primary-500")}
+                      ${renderTrendBar("Fetch", fetchCount, maxValue, "bg-success-500")}
+                    </div>
+                  </div>
+                `;
+              })
+              .join("")}
+          </div>
+        `;
+      }
+
+      function renderTrendBar(label, value, maxValue, barClass) {
+        const numericValue = Number(value) || 0;
+        const percent =
+          numericValue > 0
+            ? Math.max(3, Math.round((numericValue / maxValue) * 100))
+            : 0;
+        return `
+          <div class="rounded-lg bg-gray-50 border border-gray-100 px-3 py-2">
+            <div class="flex items-center justify-between text-[11px] text-gray-500 mb-1">
+              <span>${escapeHtml(label)}</span>
+              <span class="font-semibold text-gray-800">${formatNumber(numericValue)}</span>
+            </div>
+            <div class="h-2 rounded-full bg-gray-200 overflow-hidden">
+              <div class="h-full rounded-full ${barClass}" style="width: ${percent}%"></div>
+            </div>
+          </div>
+        `;
+      }
+
+      function renderDashboardActionableAlerts(alerts) {
+        const container = document.getElementById("dashboardActionableAlerts");
+        if (!container) return;
+
+        if (alerts.length === 0) {
+          container.innerHTML =
+            '<div class="p-6 text-center text-sm text-gray-500">ยังไม่มีข้อควรตรวจสอบ</div>';
+          return;
+        }
+
+        container.innerHTML = alerts
+          .map((alert) => {
+            const badge = getDashboardAlertBadge(alert.severity);
+            return `
+              <div class="p-4">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <div class="font-semibold text-sm text-gray-900">${escapeHtml(alert.title || "-")}</div>
+                    <div class="text-xs text-gray-500 mt-0.5">${formatDateTime(alert.created_at)}</div>
+                  </div>
+                  <span class="px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${badge.bg} ${badge.text}">
+                    ${badge.label}
+                  </span>
+                </div>
+                <p class="text-xs text-gray-600 leading-5 mt-3 line-clamp-3">${escapeHtml(alert.detail || "-")}</p>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      function renderDashboardSourceHealth(rows, page = 1) {
+        const tbody = document.getElementById("dashboardSourceHealthBody");
+        const paginationContainer = document.getElementById(
+          "dashboardSourceHealthPaginationContainer",
+        );
+        if (!tbody) return;
+
+        if (rows.length === 0) {
+          tbody.innerHTML =
+            '<tr><td colspan="7" class="px-4 py-12 text-center text-gray-500">ยังไม่มีข้อมูล source</td></tr>';
+          if (paginationContainer) {
+            paginationContainer.classList.add("hidden");
+          }
+          return;
+        }
+
+        const total = rows.length;
+        const totalPages = Math.max(
+          1,
+          Math.ceil(total / DASHBOARD_SOURCE_HEALTH_PER_PAGE),
+        );
+        const safePage = Math.min(Math.max(page, 1), totalPages);
+        const start = (safePage - 1) * DASHBOARD_SOURCE_HEALTH_PER_PAGE;
+        const end = start + DASHBOARD_SOURCE_HEALTH_PER_PAGE;
+        const paginatedRows = rows.slice(start, end);
+
+        currentDashboardSourceHealthPage = safePage;
+        dashboardSourceHealthPagination = {
+          total,
+          page: safePage,
+          totalPages,
+          start: start + 1,
+          end: Math.min(end, total),
+        };
+
+        tbody.innerHTML = paginatedRows
+          .map((source) => {
+            const health = getDashboardHealthBadge(source.health_status);
+            const activeBadge = source.is_active
+              ? '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-success-100 text-success-700">Active</span>'
+              : '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">Inactive</span>';
+            const typeLabel =
+              source.fetch_method === "api" && source.api_variant === "generic_json"
+                ? "Generic JSON API"
+                : source.fetch_method === "api"
+                  ? "WP API"
+                  : (source.fetch_method || "-").toUpperCase();
+
+            return `
+              <tr class="hover:bg-gray-50 transition-colors duration-200">
+                <td class="px-4 py-3 align-top">
+                  <div class="font-semibold text-gray-900">${escapeHtml(source.name || "-")}</div>
+                  <div class="text-xs text-gray-500">${escapeHtml(source.slug || "-")}</div>
+                </td>
+                <td class="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">${escapeHtml(typeLabel)}</td>
+                <td class="px-4 py-3 text-center whitespace-nowrap">${activeBadge}</td>
+                <td class="px-4 py-3 text-center font-semibold text-primary-600 whitespace-nowrap">${formatNumber(source.articles_last_7_days)}</td>
+                <td class="px-4 py-3 text-center text-gray-700 whitespace-nowrap">${formatPercent(source.success_rate_last_7_days)}</td>
+                <td class="px-4 py-3 text-xs text-gray-600 whitespace-nowrap">${formatDateTime(source.last_log_at || source.last_fetched_at)}</td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${health.bg} ${health.text}">
+                    ${health.label}
+                  </span>
+                </td>
+              </tr>
+            `;
+          })
+          .join("");
+
+        renderDashboardSourceHealthPagination();
+      }
+
+      function renderDashboardSourceHealthPagination() {
+        const info = document.getElementById(
+          "dashboardSourceHealthPaginationInfo",
+        );
+        const controls = document.getElementById(
+          "dashboardSourceHealthPaginationControls",
+        );
+        const container = document.getElementById(
+          "dashboardSourceHealthPaginationContainer",
+        );
+
+        if (!info || !controls || !container) return;
+
+        controls.innerHTML = "";
+        info.textContent = "";
+
+        if (!dashboardSourceHealthPagination) {
+          container.classList.add("hidden");
+          return;
+        }
+
+        const { total, page, totalPages, start, end } =
+          dashboardSourceHealthPagination;
+        container.classList.remove("hidden");
+        info.textContent = `แสดง ${start}-${end} จาก ${total.toLocaleString()} sources (หน้า ${page}/${totalPages})`;
+        controls.innerHTML = generatePaginationButtons(
+          page,
+          totalPages,
+          "goToDashboardSourceHealthPage",
+        );
+      }
+
+      function goToDashboardSourceHealthPage(page) {
+        const rows = dashboardOverview?.source_health || [];
+        if (
+          dashboardSourceHealthPagination &&
+          (page < 1 || page > dashboardSourceHealthPagination.totalPages)
+        ) {
+          return;
+        }
+        renderDashboardSourceHealth(rows, page);
+      }
+
+      function getDashboardHealthBadge(status) {
+        const config = {
+          ok: {
+            bg: "bg-success-100",
+            text: "text-success-700",
+            label: "ปกติ",
+          },
+          warning: {
+            bg: "bg-warning-100",
+            text: "text-warning-800",
+            label: "ควรตรวจ",
+          },
+          error: {
+            bg: "bg-danger-100",
+            text: "text-danger-700",
+            label: "ผิดพลาด",
+          },
+          needs_test: {
+            bg: "bg-amber-100",
+            text: "text-amber-700",
+            label: "รอทดสอบ",
+          },
+          no_fetch_yet: {
+            bg: "bg-sky-100",
+            text: "text-sky-700",
+            label: "ยังไม่ fetch",
+          },
+          inactive: {
+            bg: "bg-gray-100",
+            text: "text-gray-600",
+            label: "Inactive",
+          },
+        };
+
+        return (
+          config[status] || {
+            bg: "bg-gray-100",
+            text: "text-gray-700",
+            label: status || "-",
+          }
+        );
+      }
+
+      function getDashboardAlertBadge(severity) {
+        const config = {
+          error: {
+            bg: "bg-danger-100",
+            text: "text-danger-700",
+            label: "เร่งด่วน",
+          },
+          warning: {
+            bg: "bg-warning-100",
+            text: "text-warning-800",
+            label: "ควรตรวจ",
+          },
+          info: {
+            bg: "bg-sky-100",
+            text: "text-sky-700",
+            label: "ข้อมูล",
+          },
+        };
+
+        return (
+          config[severity] || {
+            bg: "bg-gray-100",
+            text: "text-gray-700",
+            label: severity || "-",
+          }
+        );
+      }
+
+      function mapTrendRows(rows, valueKey) {
+        return rows.reduce((acc, row) => {
+          const key = normalizeDateKey(row.metric_date);
+          if (key) {
+            acc[key] = Number(row[valueKey]) || 0;
+          }
+          return acc;
+        }, {});
+      }
+
+      function getRecentDateKeys(days) {
+        const today = new Date();
+        return Array.from({ length: days }, (_, index) => {
+          const date = new Date(today);
+          date.setDate(today.getDate() - (days - 1 - index));
+          return toDateKey(date);
+        });
+      }
+
+      function normalizeDateKey(value) {
+        if (!value) return "";
+        if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.test(value)) {
+          return value.slice(0, 10);
+        }
+
+        const date = new Date(value);
+        return Number.isNaN(date.getTime()) ? "" : toDateKey(date);
+      }
+
+      function toDateKey(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      }
+
+      function formatDateShort(dateKey) {
+        if (!dateKey) return "-";
+        const date = new Date(`${dateKey}T00:00:00`);
+        return date.toLocaleDateString("th-TH", {
+          day: "2-digit",
+          month: "short",
+        });
+      }
+
+      function formatNumber(value) {
+        const number = Number(value) || 0;
+        return number.toLocaleString();
+      }
+
+      function formatPercent(value) {
+        if (value === null || value === undefined || value === "") {
+          return "-";
+        }
+
+        const number = Number(value);
+        if (!Number.isFinite(number)) {
+          return "-";
+        }
+
+        return `${number.toFixed(number % 1 === 0 ? 0 : 2)}%`;
+      }
+
+      // Fetch sources
+      async function fetchData() {
+        showLoading();
+        try {
+          const response = await apiFetch("/api/sources");
+          const result = await response.json();
+          if (result.success) {
+            allSources = result.data;
+            sources = result.data;
+            updateSourcesCount();
+            renderSources(1);
+          } else {
+            showToast("Failed to load sources", "error");
+          }
+        } catch (error) {
+          if (isAuthError(error)) {
+            return;
+          }
+          console.error("Error:", error);
+          showToast("Cannot connect to the server", "error");
+        } finally {
+          hideLoading();
+        }
+      }
+
+      // Update sources count badge
+      function updateSourcesCount() {
+        const badge = document.getElementById("sourcesCountBadge");
+        if (badge) {
+          badge.textContent = allSources.length;
+          badge.classList.toggle("hidden", allSources.length === 0);
+        }
+      }
+
+      // Render sources with pagination
+      function renderSources(page = 1, searchTerm = "") {
+        currentSourcesPage = page;
+        const grid = document.getElementById("sourcesGrid");
+
+        const filteredSources = allSources.filter(
+          (source) =>
+            source.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            source.slug.toLowerCase().includes(searchTerm.toLowerCase()),
+        );
+
+        if (filteredSources.length === 0) {
+          grid.innerHTML = "";
+          if (currentTab === "sources") {
+            document.getElementById("emptyState").classList.remove("hidden");
+          }
+          document
+            .getElementById("sourcesPaginationContainer")
+            .classList.add("hidden");
+          return;
+        }
+
+        document.getElementById("emptyState").classList.add("hidden");
+
+        // Pagination
+        const total = filteredSources.length;
+        const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
+        const start = (page - 1) * ITEMS_PER_PAGE;
+        const end = start + ITEMS_PER_PAGE;
+        const paginatedSources = filteredSources.slice(start, end);
+
+        sourcesPagination = {
+          total,
+          page,
+          totalPages,
+          hasPrevPage: page > 1,
+          hasNextPage: page < totalPages,
+          start: start + 1,
+          end: Math.min(end, total),
+        };
+
+        grid.innerHTML = paginatedSources
+          .map((source) => {
+            const successRate =
+              source.fetch_count > 0
+                ? ((source.success_count / source.fetch_count) * 100).toFixed(0)
+                : "-";
+
+            const statusBg = source.is_active
+              ? "bg-success-100 text-success-700"
+              : "bg-danger-100 text-danger-700";
+            const statusText = source.is_active ? "Active" : "Inactive";
+            const readinessBadge = !source.runtime_supported
+              ? '<span class="px-2 py-1 rounded-full text-[11px] font-semibold bg-danger-50 text-danger-700 border border-danger-200">ยังไม่รองรับ</span>'
+              : source.is_active
+                ? '<span class="px-2 py-1 rounded-full text-[11px] font-semibold bg-success-50 text-success-700 border border-success-200">พร้อมใช้งาน</span>'
+                : source.last_test_status === "passed"
+                  ? '<span class="px-2 py-1 rounded-full text-[11px] font-semibold bg-success-50 text-success-700 border border-success-200">ผ่านทดสอบแล้ว</span>'
+                  : source.last_test_status === "failed"
+                    ? '<span class="px-2 py-1 rounded-full text-[11px] font-semibold bg-danger-50 text-danger-700 border border-danger-200">ทดสอบไม่ผ่าน</span>'
+                    : '<span class="px-2 py-1 rounded-full text-[11px] font-semibold bg-warning-50 text-warning-800 border border-warning-200">ยังไม่ทดสอบ</span>';
+            const runtimeTypeBadgeMap = {
+              generic_rss:
+                '<span class="px-2 py-1 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">Generic RSS</span>',
+              generic_wp_api:
+                '<span class="px-2 py-1 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">Generic WP API</span>',
+              generic_json_api:
+                '<span class="px-2 py-1 rounded-full text-[11px] font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200">Generic JSON API</span>',
+              custom_html:
+                '<span class="px-2 py-1 rounded-full text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">Custom HTML Fetcher</span>',
+              custom_api:
+                '<span class="px-2 py-1 rounded-full text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">Custom API Fetcher</span>',
+              custom_rss:
+                '<span class="px-2 py-1 rounded-full text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">Custom RSS Fetcher</span>',
+              unsupported:
+                '<span class="px-2 py-1 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-700 border border-gray-200">Unknown Runtime</span>',
+            };
+            const runtimeTypeBadge =
+              runtimeTypeBadgeMap[source.runtime_type] ||
+              runtimeTypeBadgeMap.unsupported;
+            const testStatusBadgeMap = {
+              passed:
+                '<span class="px-2 py-1 rounded-full text-[11px] font-semibold bg-success-50 text-success-700 border border-success-200">Passed</span>',
+              failed:
+                '<span class="px-2 py-1 rounded-full text-[11px] font-semibold bg-danger-50 text-danger-700 border border-danger-200">Failed</span>',
+              pending:
+                '<span class="px-2 py-1 rounded-full text-[11px] font-semibold bg-warning-50 text-warning-800 border border-warning-200">Pending</span>',
+            };
+            const testStatusBadge =
+              testStatusBadgeMap[source.last_test_status] ||
+              testStatusBadgeMap.pending;
+            const testMetaParts = [];
+            if (source.last_test_at) {
+              testMetaParts.push(formatDateTime(source.last_test_at));
+            }
+            if (
+              source.last_test_articles_found !== null &&
+              source.last_test_articles_found !== undefined
+            ) {
+              testMetaParts.push(`พบ ${source.last_test_articles_found} ข่าว`);
+            }
+            const lastTestMeta = testMetaParts.length
+              ? testMetaParts.join(" • ")
+              : "ยังไม่มีผลทดสอบ";
+
+            return `
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-all duration-300 hover:border-primary-300">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex-1 min-w-0">
+                            <h3 class="text-base font-bold text-gray-900 mb-1 truncate">${escapeHtml(source.name)}</h3>
+                            <p class="text-xs text-gray-500 ">${escapeHtml(source.slug)}</p>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${statusBg} whitespace-nowrap ml-2">
+                            ${statusText}
+                        </span>
+                    </div>
+
+                    <div class="space-y-2 mb-4">
+                        <div class="flex items-start gap-2">
+                            <span class="text-xs font-semibold text-primary-600 min-w-14 shrink-0">URL:</span>
+                            <span class="text-xs text-gray-600  bg-gray-50 px-2 py-1 rounded break-all flex-1">${escapeHtml(source.source_url)}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-semibold text-primary-600 min-w-14 shrink-0">วิธีดึง:</span>
+                            <span class="text-xs font-medium text-gray-700 bg-primary-50 px-2 py-1 rounded">${source.fetch_method.toUpperCase()}</span>
+                        </div>
+                        ${
+                          source.fetch_method === "api"
+                            ? `
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-semibold text-primary-600 min-w-14 shrink-0">API:</span>
+                            <span class="text-xs font-medium text-gray-700 bg-gray-50 px-2 py-1 rounded">${escapeHtml(source.api_variant === "generic_json" ? "Generic JSON" : "WordPress API")}</span>
+                        </div>
+                        `
+                            : ""
+                        }
+                        ${
+                          source.fetch_method === "api" &&
+                          source.api_variant === "generic_json"
+                            ? `
+                        <div class="flex items-start gap-2">
+                            <span class="text-xs font-semibold text-primary-600 min-w-14 shrink-0">Mapping:</span>
+                            <span class="text-xs text-gray-600 bg-gray-50 px-2 py-1 rounded break-all flex-1">${escapeHtml(source.json_items_path || "-")} • ${escapeHtml(source.json_title_field || "-")} • ${escapeHtml(source.json_link_field || "-")} • ${escapeHtml(source.json_date_field || "-")}</span>
+                        </div>
+                        `
+                            : ""
+                        }
+                        ${
+                          source.runtime_warning
+                            ? `
+                        <div class="flex items-start gap-2">
+                            <span class="text-xs font-semibold text-warning-700 min-w-14 shrink-0">Runtime:</span>
+                            <span class="text-xs text-warning-800 bg-warning-50 border border-warning-200 px-2 py-1 rounded flex-1">${escapeHtml(source.runtime_warning)}</span>
+                        </div>
+                        `
+                            : ""
+                        }
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-semibold text-primary-600 min-w-14 shrink-0">พร้อมใช้:</span>
+                            ${readinessBadge}
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-semibold text-primary-600 min-w-14 shrink-0">ชนิด:</span>
+                            ${runtimeTypeBadge}
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="text-xs font-semibold text-primary-600 min-w-14 shrink-0">ทดสอบ:</span>
+                            <div class="flex-1 flex flex-wrap items-center gap-2">
+                                ${testStatusBadge}
+                                <span class="text-xs text-gray-500">${escapeHtml(lastTestMeta)}</span>
+                            </div>
+                        </div>
+                        ${
+                          source.last_test_error
+                            ? `
+                        <div class="flex items-start gap-2">
+                            <span class="text-xs font-semibold text-danger-600 min-w-14 shrink-0">Error:</span>
+                            <span class="text-xs text-danger-700 bg-danger-50 border border-danger-200 px-2 py-1 rounded flex-1">${escapeHtml(source.last_test_error)}</span>
+                        </div>
+                        `
+                            : ""
+                        }
+                    </div>
+
+                    <div class="grid grid-cols-4 gap-2 mb-4 pt-4 border-t border-gray-100">
+                        <div class="text-center p-2 bg-gray-50 rounded-lg">
+                            <div class="text-lg font-bold text-primary-600">${source.fetch_count}</div>
+                            <div class="text-xs text-gray-500">ดึง</div>
+                        </div>
+                        <div class="text-center p-2 bg-gray-50 rounded-lg">
+                            <div class="text-lg font-bold text-success-600">${source.success_count}</div>
+                            <div class="text-xs text-gray-500">สำเร็จ</div>
+                        </div>
+                        <div class="text-center p-2 bg-gray-50 rounded-lg">
+                            <div class="text-lg font-bold text-danger-600">${source.error_count}</div>
+                            <div class="text-xs text-gray-500">ผิดพลาด</div>
+                        </div>
+                        <div class="text-center p-2 bg-gray-50 rounded-lg">
+                            <div class="text-lg font-bold text-secondary-600">${successRate}%</div>
+                            <div class="text-xs text-gray-500">อัตรา</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 xl:grid-cols-4 gap-2">
+                        <button onclick="toggleStatus(${source.id})"
+                            class="btn-ripple flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg font-medium text-sm transition-all duration-300 border ${source.is_active ? "bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 focus:outline-none" : "bg-success-50 text-success-600 border-success-200 hover:bg-success-100 focus:ring-4 focus:ring-success-200 focus:outline-none"}">
+                            ${
+                              source.is_active
+                                ? '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span>ปิด</span>'
+                                : '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span>เปิด</span>'
+                            }
+                        </button>
+                        <button onclick="testSource(${source.id})"
+                            class="btn-ripple flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 bg-warning-50 text-warning-800 border border-warning-200 rounded-lg font-medium text-sm hover:bg-warning-100 focus:ring-4 focus:ring-warning-200 focus:outline-none transition-all duration-300">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6M7 4h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6a2 2 0 012-2z"></path>
+                            </svg>
+                            <span>ทดสอบ</span>
+                        </button>
+                        <button onclick="editSource(${source.id})"
+                            class="btn-ripple flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 bg-primary-50 text-primary-600 border border-primary-200 rounded-lg font-medium text-sm hover:bg-primary-100 focus:ring-4 focus:ring-primary-200 focus:outline-none transition-all duration-300">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            </svg>
+                            <span>แก้ไข</span>
+                        </button>
+                        <button onclick="deleteSource(${source.id})"
+                            class="btn-ripple flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 bg-danger-50 text-danger-600 border border-danger-200 rounded-lg font-medium text-sm hover:bg-danger-100 focus:ring-4 focus:ring-danger-200 focus:outline-none transition-all duration-300">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                            <span>ลบ</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+          })
+          .join("");
+
+        renderSourcesPagination();
+        updateLastUpdated();
+      }
+
+      // Render sources pagination
+      function renderSourcesPagination() {
+        const info = document.getElementById("sourcesPaginationInfo");
+        const controls = document.getElementById("sourcesPaginationControls");
+        const container = document.getElementById("sourcesPaginationContainer");
+
+        // Clear previous content first
+        controls.innerHTML = "";
+        info.textContent = "";
+
+        if (!sourcesPagination) {
+          container.classList.add("hidden");
+          return;
+        }
+
+        // Always show pagination if we have sources, even if 1 page
+        const { total, page, totalPages, start, end } = sourcesPagination;
+
+        // Force show container
+        container.classList.remove("hidden");
+
+        // Update info text
+        info.textContent = `แสดง ${start}-${end} จาก ${total} แหล่ง (หน้า ${page}/${totalPages})`;
+
+        // Generate pagination buttons
+        controls.innerHTML = generatePaginationButtons(
+          page,
+          totalPages,
+          "goToSourcesPage",
+        );
+      }
+
+      function goToSourcesPage(page) {
+        // Validate page number
+        if (
+          sourcesPagination &&
+          (page < 1 || page > sourcesPagination.totalPages)
+        ) {
+          return;
+        }
+        const searchTerm = document.getElementById("searchInput").value;
+        renderSources(page, searchTerm);
+      }
+
+      // Fetch articles with pagination
+      async function fetchArticles(page = 1) {
+        currentArticlePage = page;
+        showLoading();
+        try {
+          const search = document.getElementById("articleSearch")?.value || "";
+          const source_id =
+            document.getElementById("articleSourceFilter")?.value || "";
+          const line_status =
+            document.getElementById("articleLineStatusFilter")?.value || "";
+          const params = new URLSearchParams({
+            page: page,
+            limit: ITEMS_PER_PAGE,
+            ...(search && { search }),
+            ...(source_id && { source_id }),
+            ...(line_status && { line_status }),
+          });
+          const response = await apiFetch(`/api/articles?${params}`);
+          const result = await response.json();
+          if (result.success) {
+            articles = result.data;
+            articlePagination = result.pagination;
+            renderArticles();
+            renderArticlesPagination();
+            updateArticlesCount();
+          } else {
+            showToast("Failed to load articles", "error");
+          }
+        } catch (error) {
+          if (isAuthError(error)) {
+            return;
+          }
+          console.error("Error:", error);
+          showToast("Cannot connect to the server", "error");
+        } finally {
+          hideLoading();
+        }
+      }
+
+      // Reset filters and reload articles
+      function resetFilters() {
+        document.getElementById("articleSearch").value = "";
+        document.getElementById("articleSourceFilter").value = "";
+        document.getElementById("articleLineStatusFilter").value = "";
+        fetchArticles(1);
+      }
+
+      function updateArticlesCount() {
+        const badge = document.getElementById("articlesCountBadge");
+        if (badge && articlePagination) {
+          badge.textContent = articlePagination.total.toLocaleString();
+          badge.classList.toggle("hidden", articlePagination.total === 0);
+        } else if (badge) {
+          badge.classList.add("hidden");
+        }
+      }
+
+      // Render articles table
+      function renderArticles() {
+        const tbody = document.getElementById("articlesBody");
+
+        if (!articles || articles.length === 0) {
+          tbody.innerHTML =
+            '<tr><td colspan="6" class="px-4 py-12 text-center text-gray-500">ไม่พบบทความ</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = articles
+          .map((article) => {
+            const lineStatus = getStepStatusBadge(
+              article.line_status,
+              "line_status",
+            );
+
+            return `
+                <tr class="hover:bg-gray-50 transition-colors duration-200 border-b border-gray-100 last:border-b-0">
+                    <td class="px-4 py-3 text-gray-500 text-xs ">${article.id}</td>
+                    <td class="px-4 py-3">
+                        <div class="font-semibold text-sm text-primary-600">${escapeHtml(article.source_name || "-")}</div>
+                        <div class="text-xs text-gray-500">${escapeHtml(article.source_slug || "-")}</div>
+                    </td>
+                    <td class="px-4 py-3 min-w-[300px]">
+                        <div class="font-semibold text-sm text-gray-900 mb-1">${escapeHtml(article.title)}</div>
+                        ${article.summary ? `<div class="text-xs text-gray-600 line-clamp-2">${escapeHtml(article.summary)}</div>` : ""}
+                        ${article.link ? `<a href="${escapeHtml(article.link)}" target="_blank" class="text-xs text-primary-600 hover:underline mt-1 inline-block transition-colors">📎 อ่านต่อ →</a>` : ""}
+                    </td>
+                    <td class="px-4 py-3">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${lineStatus.bg} ${lineStatus.text}">
+                            ${lineStatus.label}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-xs text-gray-600">${article.date_published ? formatDateTime(article.date_published) : "-"}</td>
+                    <td class="px-4 py-3 text-xs text-gray-600">${formatDateTime(article.created_at)}</td>
+                </tr>
+            `;
+          })
+          .join("");
+      }
+
+      // Render articles pagination
+      function renderArticlesPagination() {
+        const info = document.getElementById("articlesPaginationInfo");
+        const controls = document.getElementById("articlesPaginationControls");
+        const container = document.getElementById(
+          "articlesPaginationContainer",
+        );
+
+        // Clear previous content first
+        controls.innerHTML = "";
+        info.textContent = "";
+
+        if (!articlePagination) {
+          container.classList.add("hidden");
+          return;
+        }
+
+        // Always show pagination if we have articles, even if 1 page
+        const { total, page, totalPages } = articlePagination;
+        const start = (page - 1) * ITEMS_PER_PAGE + 1;
+        const end = Math.min(page * ITEMS_PER_PAGE, total);
+
+        // Force show container
+        container.classList.remove("hidden");
+
+        // Update info text
+        info.textContent = `แสดง ${start}-${end} จาก ${total.toLocaleString()} บทความ (หน้า ${page}/${totalPages})`;
+
+        // Generate pagination buttons
+        controls.innerHTML = generatePaginationButtons(
+          page,
+          totalPages,
+          "goToArticlePage",
+        );
+      }
+
+      function goToArticlePage(page) {
+        // Validate page number
+        if (
+          articlePagination &&
+          (page < 1 || page > articlePagination.totalPages)
+        ) {
+          return;
+        }
+        fetchArticles(page);
+      }
+
+      // Fetch logs with pagination
+      async function fetchLogs(page = 1) {
+        currentLogsPage = page;
+        showLoading();
+        try {
+          const response = await apiFetch("/api/logs");
+          const result = await response.json();
+          if (result.success) {
+            allLogs = result.data;
+            logs = result.data;
+            updateLogsCount();
+            renderLogs(page);
+          } else {
+            showToast("Failed to load logs", "error");
+          }
+        } catch (error) {
+          if (isAuthError(error)) {
+            return;
+          }
+          console.error("Error:", error);
+          showToast("Cannot connect to the server", "error");
+        } finally {
+          hideLoading();
+        }
+      }
+
+      function resetLogsView() {
+        const searchInput = document.getElementById("logsSearchInput");
+        if (searchInput) {
+          searchInput.value = "";
+        }
+        fetchLogs(1);
+      }
+
+      function updateLogsCount() {
+        const badge = document.getElementById("logsCountBadge");
+        if (badge) {
+          badge.textContent = allLogs.length.toLocaleString();
+          badge.classList.toggle("hidden", allLogs.length === 0);
+        }
+      }
+
+      async function fetchAuditLogs(page = 1) {
+        currentAuditPage = page;
+        showLoading();
+        try {
+          const response = await apiFetch("/api/audit-logs?limit=200");
+          const result = await response.json();
+          if (result.success) {
+            allAuditLogs = result.data || [];
+            auditLogs = allAuditLogs;
+            updateAuditCount();
+            renderAuditLogs(page);
+          } else {
+            showToast("Failed to load audit logs", "error");
+          }
+        } catch (error) {
+          if (isAuthError(error)) {
+            return;
+          }
+          console.error("Error:", error);
+          showToast("Cannot connect to the server", "error");
+        } finally {
+          hideLoading();
+        }
+      }
+
+      function resetAuditView() {
+        const searchInput = document.getElementById("auditSearchInput");
+        const actionFilter = document.getElementById("auditActionFilter");
+
+        if (searchInput) {
+          searchInput.value = "";
+        }
+        if (actionFilter) {
+          actionFilter.value = "";
+        }
+
+        fetchAuditLogs(1);
+      }
+
+      function updateAuditCount() {
+        const badge = document.getElementById("auditCountBadge");
+        if (badge) {
+          badge.textContent = allAuditLogs.length.toLocaleString();
+          badge.classList.toggle("hidden", allAuditLogs.length === 0);
+        }
+      }
+
+      function getAuditFilters() {
+        return {
+          searchTerm:
+            document.getElementById("auditSearchInput")?.value.trim() || "",
+          actionFilter:
+            document.getElementById("auditActionFilter")?.value || "",
+        };
+      }
+
+      function getAuditActionBadge(action) {
+        const config = {
+          login: {
+            bg: "bg-success-100",
+            text: "text-success-700",
+            label: "Login",
+          },
+          logout: {
+            bg: "bg-gray-100",
+            text: "text-gray-700",
+            label: "Logout",
+          },
+          create: {
+            bg: "bg-primary-100",
+            text: "text-primary-700",
+            label: "Create",
+          },
+          update: {
+            bg: "bg-amber-100",
+            text: "text-amber-700",
+            label: "Update",
+          },
+          delete: {
+            bg: "bg-danger-100",
+            text: "text-danger-700",
+            label: "Delete",
+          },
+          toggle: {
+            bg: "bg-sky-100",
+            text: "text-sky-700",
+            label: "Toggle",
+          },
+          run_now: {
+            bg: "bg-violet-100",
+            text: "text-violet-700",
+            label: "Run Now",
+          },
+          run_now_failed: {
+            bg: "bg-danger-100",
+            text: "text-danger-700",
+            label: "Run Failed",
+          },
+        };
+
+        return (
+          config[action] || {
+            bg: "bg-gray-100",
+            text: "text-gray-700",
+            label: action || "-",
+          }
+        );
+      }
+
+      function summarizeAuditDetails(details) {
+        if (!details || typeof details !== "object") {
+          return "-";
+        }
+
+        const preferredKeys = [
+          "error",
+          "target_slug",
+          "slug",
+          "fetch_method",
+          "duration_ms",
+          "active_source_count",
+          "before_is_active",
+          "after_is_active",
+        ];
+
+        const summaryParts = [];
+        for (const key of preferredKeys) {
+          if (
+            !(key in details) ||
+            details[key] === null ||
+            details[key] === ""
+          ) {
+            continue;
+          }
+
+          const rawValue = details[key];
+          const value =
+            typeof rawValue === "object"
+              ? JSON.stringify(rawValue)
+              : String(rawValue);
+          summaryParts.push(`${key}: ${value}`);
+          if (summaryParts.length >= 3) {
+            break;
+          }
+        }
+
+        if (summaryParts.length > 0) {
+          return summaryParts.join(" | ");
+        }
+
+        const fallback = JSON.stringify(details);
+        return fallback && fallback.length > 180
+          ? `${fallback.slice(0, 177)}...`
+          : fallback || "-";
+      }
+
+      function renderAuditLogs(
+        page = 1,
+        searchTerm = null,
+        actionFilter = null,
+      ) {
+        currentAuditPage = page;
+        const tbody = document.getElementById("auditBody");
+        const filters = getAuditFilters();
+        const normalizedSearch = (
+          searchTerm ?? filters.searchTerm
+        ).toLowerCase();
+        const normalizedAction = actionFilter ?? filters.actionFilter;
+        const filteredAuditLogs = allAuditLogs.filter((entry) => {
+          if (normalizedAction && entry.action !== normalizedAction) {
+            return false;
+          }
+
+          const haystack = [
+            entry.username,
+            entry.action,
+            entry.target_type,
+            entry.target_name,
+            entry.target_id,
+            summarizeAuditDetails(entry.details),
+          ]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
+
+          return haystack.includes(normalizedSearch);
+        });
+
+        if (filteredAuditLogs.length === 0) {
+          tbody.innerHTML =
+            '<tr><td colspan="5" class="px-4 py-12 text-center text-gray-500">ไม่พบข้อมูล Audit Log</td></tr>';
+          document
+            .getElementById("auditPaginationContainer")
+            .classList.add("hidden");
+          return;
+        }
+
+        const total = filteredAuditLogs.length;
+        const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
+        const start = (page - 1) * ITEMS_PER_PAGE;
+        const end = start + ITEMS_PER_PAGE;
+        const paginatedAuditLogs = filteredAuditLogs.slice(start, end);
+
+        auditPagination = {
+          total,
+          page,
+          totalPages,
+          hasPrevPage: page > 1,
+          hasNextPage: page < totalPages,
+          start: start + 1,
+          end: Math.min(end, total),
+        };
+
+        tbody.innerHTML = paginatedAuditLogs
+          .map((entry) => {
+            const action = getAuditActionBadge(entry.action);
+            const targetName = entry.target_name || "-";
+            const targetType = entry.target_type || "-";
+            const targetId =
+              entry.target_id === null || entry.target_id === undefined
+                ? ""
+                : ` #${entry.target_id}`;
+
+            return `
+                <tr class="hover:bg-gray-50 transition-colors duration-200 border-b border-gray-100 last:border-b-0">
+                    <td class="px-4 py-3 text-xs text-gray-600 whitespace-nowrap">${formatDateTime(entry.created_at)}</td>
+                    <td class="px-4 py-3 align-top">
+                        <div class="font-semibold text-sm text-gray-900 break-words">${escapeHtml(entry.username || "-")}</div>
+                    </td>
+                    <td class="px-4 py-3 align-top">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${action.bg} ${action.text}">${action.label}</span>
+                    </td>
+                    <td class="px-4 py-3 align-top">
+                        <div class="font-semibold text-sm text-primary-600 break-words">${escapeHtml(targetName)}</div>
+                        <div class="text-xs text-gray-500 break-words">${escapeHtml(targetType)}${escapeHtml(targetId)}</div>
+                    </td>
+                    <td class="px-4 py-3 text-xs text-gray-600 leading-6 break-words">${escapeHtml(summarizeAuditDetails(entry.details))}</td>
+                </tr>
+            `;
+          })
+          .join("");
+
+        renderAuditPagination();
+      }
+
+      function renderAuditPagination() {
+        const info = document.getElementById("auditPaginationInfo");
+        const controls = document.getElementById("auditPaginationControls");
+        const container = document.getElementById("auditPaginationContainer");
+
+        controls.innerHTML = "";
+        info.textContent = "";
+
+        if (!auditPagination) {
+          container.classList.add("hidden");
+          return;
+        }
+
+        const { total, page, totalPages, start, end } = auditPagination;
+        container.classList.remove("hidden");
+        info.textContent = `แสดง ${start}-${end} จาก ${total.toLocaleString()} รายการ (หน้า ${page}/${totalPages})`;
+        controls.innerHTML = generatePaginationButtons(
+          page,
+          totalPages,
+          "goToAuditPage",
+        );
+      }
+
+      function goToAuditPage(page) {
+        if (
+          auditPagination &&
+          (page < 1 || page > auditPagination.totalPages)
+        ) {
+          return;
+        }
+        const { searchTerm, actionFilter } = getAuditFilters();
+        renderAuditLogs(page, searchTerm, actionFilter);
+      }
+
+      function getFetchStatusBadge(status) {
+        const statusConfig = {
+          success: {
+            bg: "bg-success-100",
+            text: "text-success-700",
+            label: "สำเร็จ",
+          },
+          partial: {
+            bg: "bg-warning-100",
+            text: "text-warning-700",
+            label: "บางส่วน",
+          },
+          failed: {
+            bg: "bg-danger-100",
+            text: "text-danger-700",
+            label: "ล้มเหลว",
+          },
+          error: {
+            bg: "bg-danger-100",
+            text: "text-danger-700",
+            label: "ผิดพลาด",
+          },
+        };
+
+        return (
+          statusConfig[status] || {
+            bg: "bg-gray-100",
+            text: "text-gray-700",
+            label: status || "-",
+          }
+        );
+      }
+
+      function getStepStatusBadge(status, step) {
+        const common = {
+          skipped: {
+            bg: "bg-gray-100",
+            text: "text-gray-600",
+            label: "ข้าม",
+          },
+          failed: {
+            bg: "bg-danger-100",
+            text: "text-danger-700",
+            label: "ไม่สำเร็จ",
+          },
+          dry_run: {
+            bg: "bg-sky-100",
+            text: "text-sky-700",
+            label: "DRY RUN",
+          },
+          not_configured: {
+            bg: "bg-gray-100",
+            text: "text-gray-600",
+            label: "ไม่ตั้งค่า",
+          },
+          disabled: {
+            bg: "bg-slate-100",
+            text: "text-slate-600",
+            label: "ปิดใช้งาน",
+          },
+        };
+
+        const perStep = {
+          mysql_status: {
+            saved: {
+              bg: "bg-success-100",
+              text: "text-success-700",
+              label: "บันทึกแล้ว",
+            },
+          },
+          telegram_status: {
+            sent: {
+              bg: "bg-success-100",
+              text: "text-success-700",
+              label: "ส่งแล้ว",
+            },
+          },
+          wordpress_status: {
+            created: {
+              bg: "bg-success-100",
+              text: "text-success-700",
+              label: "สร้างโพสต์",
+            },
+            duplicate: {
+              bg: "bg-amber-100",
+              text: "text-amber-700",
+              label: "ซ้ำใน WP",
+            },
+          },
+          line_status: {
+            sent: {
+              bg: "bg-success-100",
+              text: "text-success-700",
+              label: "ส่งแล้ว",
+            },
+            blocked_by_wordpress: {
+              bg: "bg-amber-100",
+              text: "text-amber-700",
+              label: "รอ WP",
+            },
+          },
+        };
+
+        return (
+          perStep[step]?.[status] ||
+          common[status] || {
+            bg: "bg-gray-100",
+            text: "text-gray-700",
+            label: status || "-",
+          }
+        );
+      }
+
+      // Render logs with pagination
+      function renderLogs(page = 1, searchTerm = "") {
+        currentLogsPage = page;
+        const tbody = document.getElementById("logsBody");
+
+        const filteredLogs = allLogs.filter(
+          (log) =>
+            (log.source_name &&
+              log.source_name
+                .toLowerCase()
+                .includes(searchTerm.toLowerCase())) ||
+            (log.source_slug &&
+              log.source_slug.toLowerCase().includes(searchTerm.toLowerCase())),
+        );
+
+        if (filteredLogs.length === 0) {
+          tbody.innerHTML =
+            '<tr><td colspan="10" class="px-4 py-12 text-center text-gray-500">ไม่พบข้อมูล Logs</td></tr>';
+          document
+            .getElementById("logsPaginationContainer")
+            .classList.add("hidden");
+          return;
+        }
+
+        // Pagination
+        const total = filteredLogs.length;
+        const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
+        const start = (page - 1) * ITEMS_PER_PAGE;
+        const end = start + ITEMS_PER_PAGE;
+        const paginatedLogs = filteredLogs.slice(start, end);
+
+        logsPagination = {
+          total,
+          page,
+          totalPages,
+          hasPrevPage: page > 1,
+          hasNextPage: page < totalPages,
+          start: start + 1,
+          end: Math.min(end, total),
+        };
+
+        tbody.innerHTML = paginatedLogs
+          .map((log) => {
+            const status = getFetchStatusBadge(log.status);
+            const mysqlStatus = getStepStatusBadge(
+              log.mysql_status,
+              "mysql_status",
+            );
+            const telegramStatus = getStepStatusBadge(
+              log.telegram_status,
+              "telegram_status",
+            );
+            const wordpressStatus = getStepStatusBadge(
+              log.wordpress_status,
+              "wordpress_status",
+            );
+            const lineStatus = getStepStatusBadge(
+              log.line_status,
+              "line_status",
+            );
+
+            return `
+                <tr class="hover:bg-gray-50 transition-colors duration-200 border-b border-gray-100 last:border-b-0">
+                    <td class="px-4 py-3 text-xs text-gray-600 whitespace-nowrap">${formatDateTime(log.created_at)}</td>
+                    <td class="px-4 py-3 text-sm font-semibold text-gray-900 break-words">${escapeHtml(log.source_name || "-")}</td>
+                    <td class="px-4 py-3 text-sm text-center font-semibold text-gray-700 whitespace-nowrap">${log.articles_found}</td>
+                    <td class="px-4 py-3 text-sm text-center font-semibold text-primary-600 whitespace-nowrap">${log.new_articles}</td>
+                    <td class="px-4 py-3 text-sm"><span class="px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${mysqlStatus.bg} ${mysqlStatus.text}">${mysqlStatus.label}</span></td>
+                    <td class="px-4 py-3 text-sm"><span class="px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${telegramStatus.bg} ${telegramStatus.text}">${telegramStatus.label}</span></td>
+                    <td class="px-4 py-3 text-sm"><span class="px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${wordpressStatus.bg} ${wordpressStatus.text}">${wordpressStatus.label}</span></td>
+                    <td class="px-4 py-3 text-sm"><span class="px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${lineStatus.bg} ${lineStatus.text}">${lineStatus.label}</span></td>
+                    <td class="px-4 py-3 text-sm">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${status.bg} ${status.text}">${status.label}</span>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-center text-gray-600 whitespace-nowrap">${formatDuration(log.duration_ms)}</td>
+                </tr>
+            `;
+          })
+          .join("");
+
+        renderLogsPagination();
+      }
+
+      // Render logs pagination
+      function renderLogsPagination() {
+        const info = document.getElementById("logsPaginationInfo");
+        const controls = document.getElementById("logsPaginationControls");
+        const container = document.getElementById("logsPaginationContainer");
+
+        // Clear previous content first
+        controls.innerHTML = "";
+        info.textContent = "";
+
+        if (!logsPagination) {
+          container.classList.add("hidden");
+          return;
+        }
+
+        // Always show pagination if we have logs, even if 1 page
+        const { total, page, totalPages, start, end } = logsPagination;
+
+        // Force show container
+        container.classList.remove("hidden");
+
+        // Update info text
+        info.textContent = `แสดง ${start}-${end} จาก ${total.toLocaleString()} logs (หน้า ${page}/${totalPages})`;
+
+        // Generate pagination buttons
+        controls.innerHTML = generatePaginationButtons(
+          page,
+          totalPages,
+          "goToLogsPage",
+        );
+      }
+
+      function goToLogsPage(page) {
+        // Validate page number
+        if (logsPagination && (page < 1 || page > logsPagination.totalPages)) {
+          return;
+        }
+        const searchTerm = document.getElementById("logsSearchInput").value;
+        renderLogs(page, searchTerm);
+      }
+
+      // Generate pagination buttons
+      function generatePaginationButtons(
+        currentPage,
+        totalPages,
+        goToFunction,
+      ) {
+        let buttons = "";
+
+        // Previous button
+        const hasPrev = currentPage > 1;
+        buttons += `<button onclick="${goToFunction}(${currentPage - 1})" class="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${hasPrev ? "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300" : "bg-gray-50 text-gray-400 cursor-not-allowed border border-gray-200"}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                <span>ก่อนหน้า</span>
+            </button>`;
+
+        // Page numbers
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+
+        if (startPage > 1) {
+          buttons += `<button onclick="${goToFunction}(1)" class="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${1 === currentPage ? "bg-primary-100 text-primary-600 border-primary-200" : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300"} border">1</button>`;
+          if (startPage > 2)
+            buttons += `<span class="inline-flex items-center justify-center px-2 py-1.5 text-gray-400">...</span>`;
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+          buttons += `<button onclick="${goToFunction}(${i})" class="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${i === currentPage ? "bg-primary-100 text-primary-600 border-primary-200" : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300"} border">${i}</button>`;
+        }
+
+        if (endPage < totalPages) {
+          if (endPage < totalPages - 1)
+            buttons += `<span class="inline-flex items-center justify-center px-2 py-1.5 text-gray-400">...</span>`;
+          buttons += `<button onclick="${goToFunction}(${totalPages})" class="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${totalPages === currentPage ? "bg-primary-100 text-primary-600 border-primary-200" : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300"} border">${totalPages}</button>`;
+        }
+
+        // Next button
+        const hasNext = currentPage < totalPages;
+        buttons += `<button onclick="${goToFunction}(${currentPage + 1})" class="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${hasNext ? "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300" : "bg-gray-50 text-gray-400 cursor-not-allowed border border-gray-200"}">
+                <span>ถัดไป</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>`;
+
+        return buttons;
+      }
+
+      // Format datetime
+      function formatDateTime(dateStr) {
+        if (!dateStr) return "-";
+        const date = new Date(dateStr);
+        return date.toLocaleString("th-TH", {
+          day: "2-digit",
+          month: "short",
+          year: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+
+      // Format duration
+      function formatDuration(ms) {
+        if (!ms) return "-";
+        if (ms < 1000) return `${ms}ms`;
+        const seconds = Math.floor(ms / 1000);
+        if (seconds < 60) return `${seconds}s`;
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes}m ${remainingSeconds}s`;
+      }
+
+      function updateApiConfigVisibility() {
+        const fetchMethod = document.getElementById("fetchMethod")?.value || "";
+        const apiVariant = document.getElementById("apiVariant")?.value || "wordpress";
+        const apiConfigSection = document.getElementById("apiConfigSection");
+        const genericJsonMappingSection = document.getElementById(
+          "genericJsonMappingSection",
+        );
+        const apiVariantHint = document.getElementById("apiVariantHint");
+        const jsonItemsPath = document.getElementById("jsonItemsPath");
+        const jsonTitleField = document.getElementById("jsonTitleField");
+        const jsonLinkField = document.getElementById("jsonLinkField");
+        const jsonDateField = document.getElementById("jsonDateField");
+
+        if (!apiConfigSection || !genericJsonMappingSection || !apiVariantHint) {
+          return;
+        }
+
+        const isApiMethod = fetchMethod === "api";
+        const isGenericJson = isApiMethod && apiVariant === "generic_json";
+
+        apiConfigSection.classList.toggle("hidden", !isApiMethod);
+        genericJsonMappingSection.classList.toggle("hidden", !isGenericJson);
+        if (jsonItemsPath) jsonItemsPath.required = isGenericJson;
+        if (jsonTitleField) jsonTitleField.required = isGenericJson;
+        if (jsonLinkField) jsonLinkField.required = isGenericJson;
+        if (jsonDateField) jsonDateField.required = isGenericJson;
+
+        if (!isApiMethod) {
+          apiVariantHint.textContent = "";
+          return;
+        }
+
+        apiVariantHint.textContent =
+          apiVariant === "generic_json"
+            ? "ใช้กับ public JSON API ที่มี endpoint เดียว และต้องกรอก mapping ด้านล่าง"
+            : "ใช้กับ endpoint แบบ `/wp-json/wp/v2/posts`";
+      }
+
+      function getSourceFormPayload() {
+        const fetchMethod = document.getElementById("fetchMethod").value;
+        const apiVariant =
+          fetchMethod === "api"
+            ? document.getElementById("apiVariant").value
+            : null;
+
+        return {
+          name: document.getElementById("sourceName").value,
+          slug: document.getElementById("sourceSlug").value,
+          source_url: document.getElementById("sourceUrl").value,
+          fetch_method: fetchMethod,
+          api_variant: apiVariant,
+          json_items_path:
+            fetchMethod === "api" && apiVariant === "generic_json"
+              ? document.getElementById("jsonItemsPath").value
+              : "",
+          json_title_field:
+            fetchMethod === "api" && apiVariant === "generic_json"
+              ? document.getElementById("jsonTitleField").value
+              : "",
+          json_link_field:
+            fetchMethod === "api" && apiVariant === "generic_json"
+              ? document.getElementById("jsonLinkField").value
+              : "",
+          json_date_field:
+            fetchMethod === "api" && apiVariant === "generic_json"
+              ? document.getElementById("jsonDateField").value
+              : "",
+          json_summary_field:
+            fetchMethod === "api" && apiVariant === "generic_json"
+              ? document.getElementById("jsonSummaryField").value
+              : "",
+          is_active: parseInt(document.getElementById("sourceActive").value),
+        };
+      }
+
+      // Show add modal
+      function showAddModal() {
+        document.getElementById("modalTitle").textContent =
+          "เพิ่มแหล่งข้อมูลใหม่";
+        document.getElementById("sourceForm").reset();
+        document.getElementById("sourceId").value = "";
+        document.getElementById("formSourceSlug").value = "";
+        document.getElementById("sourceActive").value = "0";
+        document.getElementById("sourceActive").disabled = true;
+        document.getElementById("apiVariant").value = "wordpress";
+        document.getElementById("sourceStatusField").classList.add("hidden");
+        document.getElementById("sourceStatusHint").textContent =
+          "แหล่งข่าวใหม่จะเริ่มเป็น Inactive ก่อน และควรทดสอบการดึงให้ผ่านก่อนเปิดใช้งาน";
+        updateApiConfigVisibility();
+        showModal();
+      }
+
+      // Edit source
+      function editSource(id) {
+        const source = allSources.find((s) => s.id === id);
+        if (!source) return;
+
+        document.getElementById("modalTitle").textContent = "แก้ไขแหล่งข้อมูล";
+        document.getElementById("sourceId").value = source.id;
+        document.getElementById("sourceName").value = source.name;
+        document.getElementById("sourceSlug").value = source.slug;
+        document.getElementById("formSourceSlug").value = source.slug;
+        document.getElementById("sourceUrl").value = source.source_url;
+        document.getElementById("fetchMethod").value = source.fetch_method;
+        document.getElementById("apiVariant").value =
+          source.api_variant || "wordpress";
+        document.getElementById("jsonItemsPath").value =
+          source.json_items_path || "";
+        document.getElementById("jsonTitleField").value =
+          source.json_title_field || "";
+        document.getElementById("jsonLinkField").value =
+          source.json_link_field || "";
+        document.getElementById("jsonDateField").value =
+          source.json_date_field || "";
+        document.getElementById("jsonSummaryField").value =
+          source.json_summary_field || "";
+        document.getElementById("sourceActive").value = source.is_active
+          ? "1"
+          : "0";
+        document.getElementById("sourceActive").disabled = false;
+        document.getElementById("sourceStatusField").classList.remove("hidden");
+        document.getElementById("sourceStatusHint").textContent =
+          source.runtime_supported
+            ? "แนะนำให้ทดสอบการดึงก่อนเปิดใช้งาน"
+            : "ยังไม่ควรเปิดใช้งาน เพราะ runtime ยังไม่รองรับ source นี้";
+        updateApiConfigVisibility();
+        showModal();
+      }
+
+      function showModal() {
+        setOverlayVisibility("modalOverlay", true);
+        syncBodyScrollLock();
+      }
+
+      function closeModal() {
+        setOverlayVisibility("modalOverlay", false);
+        syncBodyScrollLock();
+      }
+
+      function showFetchMethodInfo() {
+        setOverlayVisibility("fetchMethodInfoOverlay", true);
+        syncBodyScrollLock();
+      }
+
+      function closeFetchMethodInfo() {
+        setOverlayVisibility("fetchMethodInfoOverlay", false);
+        syncBodyScrollLock();
+      }
+
+      // Toggle status
+      async function toggleStatus(id) {
+        try {
+          const response = await apiFetch(`/api/sources/${id}/toggle`, {
+            method: "PATCH",
+          });
+          const result = await response.json();
+          if (result.success) {
+            showToast("Status updated", "success");
+            fetchData();
+          } else {
+            showToast(
+              result.error || "Failed to update source status",
+              "error",
+            );
+          }
+        } catch (error) {
+          if (isAuthError(error)) {
+            return;
+          }
+          console.error("Error:", error);
+          showToast("Cannot update source status", "error");
+        }
+      }
+
+      async function testSource(id) {
+        const source = allSources.find((item) => item.id === id);
+        const sourceName = source?.name || "source";
+
+        showLoading();
+        try {
+          const response = await apiFetch(`/api/sources/${id}/test`, {
+            method: "POST",
+          });
+          const result = await response.json();
+
+          if (!result.success) {
+            showToast(result.error || "ทดสอบ source ไม่สำเร็จ", "error");
+            return;
+          }
+
+          const testResult = result.data || {};
+          const articleCount = Number(testResult.articles_found || 0);
+          const sampleTitles = Array.isArray(testResult.sample_titles)
+            ? testResult.sample_titles.filter(Boolean).slice(0, 3)
+            : [];
+
+          if (testResult.passed) {
+            const details = sampleTitles.length
+              ? ` ตัวอย่าง: ${sampleTitles.join(" | ")}`
+              : "";
+            showToast(
+              `ทดสอบ ${sourceName} ผ่าน พบ ${articleCount} ข่าว${details}`,
+              "success",
+              7000,
+            );
+          } else {
+            showToast(
+              `ทดสอบ ${sourceName} ไม่ผ่าน: ${testResult.error || "Unknown error"}`,
+              "error",
+              7000,
+            );
+          }
+
+          fetchData();
+          if (currentTab === "audit") {
+            fetchAuditLogs();
+          }
+        } catch (error) {
+          if (isAuthError(error)) {
+            return;
+          }
+          console.error("Error:", error);
+          showToast("ไม่สามารถทดสอบ source ได้", "error");
+        } finally {
+          hideLoading();
+        }
+      }
+
+      // Delete source
+      async function deleteSource(id) {
+        if (!confirm("Delete this source?")) return;
+        try {
+          const response = await apiFetch(`/api/sources/${id}`, {
+            method: "DELETE",
+          });
+          const result = await response.json();
+          if (result.success) {
+            showToast("Source deleted", "success");
+            fetchData();
+          } else {
+            showToast("Failed to delete source", "error");
+          }
+        } catch (error) {
+          if (isAuthError(error)) {
+            return;
+          }
+          console.error("Error:", error);
+          showToast("Cannot delete source", "error");
+        }
+      }
+
+      // Save source (create/update) with loading state
+      document
+        .getElementById("sourceForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const submitBtn = document.getElementById("submitBtn");
+          const originalContent = submitBtn.innerHTML;
+
+          const id = document.getElementById("sourceId").value;
+          const originalSlug = document.getElementById("formSourceSlug").value;
+          const data = getSourceFormPayload();
+
+          // Show loading state
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = `
+                <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8 0 018 8 0 0116 0c0 4.42-3.58 8-8 8-8 0 01-8-3.58-8-8zm3 4h-2v2h2v-2zm-2 6h-2v2h2v-2zm4 0h-2v2h2v-2z"></path>
+                </svg>
+                <span>กำลังบันทึก...</span>
+            `;
+
+          try {
+            let response;
+            if (id) {
+              response = await apiFetch(`/api/sources/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data),
+              });
+            } else {
+              response = await apiFetch("/api/sources", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data),
+              });
+            }
+
+            const result = await response.json();
+
+            if (result.success) {
+              if (originalSlug && data.slug !== originalSlug) {
+                showToast(
+                  "บันทึกเรียบร้อย (เปลี่ยน slug แล้วรีเฟร็ช)",
+                  "success",
+                );
+                setTimeout(() => fetchData(), 500);
+              } else {
+                showToast(
+                  result.message ||
+                    (id
+                      ? "อัปเดตเรียบร้อย"
+                      : "เพิ่มเรียบร้อย (เริ่มต้นเป็น Inactive)"),
+                  "success",
+                );
+                fetchData();
+              }
+              closeModal();
+            } else {
+              showToast("เกิดข้อผิดพลาด", "error");
+            }
+          } catch (error) {
+            if (isAuthError(error)) {
+              return;
+            }
+            console.error("Error:", error);
+            showToast("ไม่สามารถบันทึกข้อมูล", "error");
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalContent;
+          }
+        });
+
+      document
+        .getElementById("fetchMethod")
+        .addEventListener("change", function () {
+          updateApiConfigVisibility();
+        });
+
+      document
+        .getElementById("apiVariant")
+        .addEventListener("change", function () {
+          updateApiConfigVisibility();
+        });
+
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const submitBtn = document.getElementById("loginSubmitBtn");
+          const errorBox = document.getElementById("loginError");
+          const originalContent = submitBtn.innerHTML;
+          const username = document
+            .getElementById("loginUsername")
+            .value.trim();
+          const password = document.getElementById("loginPassword").value;
+
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = "กำลังเข้าสู่ระบบ...";
+          errorBox.classList.add("hidden");
+          errorBox.textContent = "";
+
+          try {
+            await login(username, password);
+            resetTransientUi();
+            await refreshAuthenticatedAppState();
+            showToast("เข้าสู่ระบบสำเร็จ", "success");
+          } catch (error) {
+            errorBox.textContent = error.message || "เข้าสู่ระบบไม่สำเร็จ";
+            errorBox.classList.remove("hidden");
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalContent;
+          }
+        });
+
+      document
+        .getElementById("logoutBtn")
+        .addEventListener("click", async function () {
+          await logout();
+        });
+
+      // Search functionality
+      document
+        .getElementById("searchInput")
+        .addEventListener("input", function (e) {
+          renderSources(1, e.target.value);
+        });
+
+      document
+        .getElementById("logsSearchInput")
+        .addEventListener("input", function (e) {
+          renderLogs(1, e.target.value);
+        });
+
+      document
+        .getElementById("auditSearchInput")
+        .addEventListener("input", function (e) {
+          renderAuditLogs(1, e.target.value);
+        });
+
+      document
+        .getElementById("auditActionFilter")
+        .addEventListener("change", function (e) {
+          const searchTerm =
+            document.getElementById("auditSearchInput")?.value || "";
+          renderAuditLogs(1, searchTerm, e.target.value);
+        });
+
+      // Article search and filter functionality (real-time)
+      document
+        .getElementById("articleSearch")
+        .addEventListener("input", function () {
+          fetchArticles(1);
+        });
+
+      document
+        .getElementById("articleSourceFilter")
+        .addEventListener("change", function () {
+          fetchArticles(1);
+        });
+
+      document
+        .getElementById("articleLineStatusFilter")
+        .addEventListener("change", function () {
+          fetchArticles(1);
+        });
+
+      // Close modal on outside click
+      document
+        .getElementById("modalOverlay")
+        .addEventListener("click", function (e) {
+          if (e.target === this) {
+            closeModal();
+          }
+        });
+
+      document
+        .getElementById("fetchMethodInfoOverlay")
+        .addEventListener("click", function (e) {
+          if (e.target === this) {
+            closeFetchMethodInfo();
+          }
+        });
+
+      // Load sources into article filter dropdown
+      async function loadSourceFilter() {
+        try {
+          const response = await apiFetch("/api/sources");
+          const result = await response.json();
+          if (result.success) {
+            const select = document.getElementById("articleSourceFilter");
+            if (select) {
+              select.innerHTML =
+                '<option value="">ทุกแหล่ง</option>' +
+                result.data
+                  .filter((s) => s.is_active)
+                  .sort((a, b) => a.name.localeCompare(b.name))
+                  .map(
+                    (s) =>
+                      `<option value="${s.id}">${escapeHtml(s.name)}</option>`,
+                  )
+                  .join("");
+            }
+          }
+        } catch (error) {
+          if (isAuthError(error)) {
+            return;
+          }
+          console.error("Error loading sources:", error);
+        }
+      }
+
+      function updateLastUpdated() {
+        const now = new Date();
+        document.getElementById("lastUpdated").textContent = now.toLocaleString(
+          "th-TH",
+          {
+            day: "2-digit",
+            month: "short",
+            year: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+          },
+        );
+      }
+
+      // Escape HTML
+      function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      // Show toast notification
+      function showToast(message, type = "success") {
+        const toast = document.getElementById("toast");
+
+        const icon =
+          type === "success"
+            ? '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>'
+            : '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+
+        const bgColor = type === "success" ? "bg-success-600" : "bg-danger-600";
+
+        toast.innerHTML = `${icon}<span>${message}</span>`;
+        toast.className = `fixed bottom-5 right-5 px-6 py-4 rounded-xl font-semibold shadow-2xl transition-all duration-300 ${bgColor} text-white z-50 flex items-center gap-3 pointer-events-none translate-y-4 opacity-0`;
+        toast.style.display = "flex";
+
+        setTimeout(() => {
+          toast.classList.remove("translate-y-4", "opacity-0");
+        }, 10);
+
+        if (toastHideTimeout) {
+          clearTimeout(toastHideTimeout);
+        }
+
+        setTimeout(() => {
+          toast.classList.add("translate-y-4", "opacity-0");
+        }, 3000);
+
+        toastHideTimeout = setTimeout(() => {
+          toast.style.display = "none";
+        }, 3400);
+      }
+
+      function showLoading() {
+        const loadingState = document.getElementById("loadingState");
+        loadingState.classList.remove("hidden");
+        loadingState.style.display = "block";
+        document.getElementById("emptyState").classList.add("hidden");
+        document.getElementById("dashboardSection").classList.add("hidden");
+        document.getElementById("sourcesSection").classList.add("hidden");
+        document.getElementById("articlesSection").classList.add("hidden");
+        document.getElementById("logsSection").classList.add("hidden");
+        document.getElementById("auditSection").classList.add("hidden");
+        // Don't hide pagination containers - they'll be managed by render functions
+      }
+
+      function hideLoading() {
+        const loadingState = document.getElementById("loadingState");
+        loadingState.classList.add("hidden");
+        loadingState.style.display = "none";
+
+        if (currentTab === "dashboard") {
+          document
+            .getElementById("dashboardSection")
+            .classList.remove("hidden");
+        } else if (currentTab === "sources") {
+          document.getElementById("sourcesSection").classList.remove("hidden");
+          document
+            .getElementById("sourcesPaginationContainer")
+            .classList.remove("hidden");
+        } else if (currentTab === "articles") {
+          document.getElementById("articlesSection").classList.remove("hidden");
+          document
+            .getElementById("articlesPaginationContainer")
+            .classList.remove("hidden");
+        } else if (currentTab === "logs") {
+          document.getElementById("logsSection").classList.remove("hidden");
+          document
+            .getElementById("logsPaginationContainer")
+            .classList.remove("hidden");
+        } else if (currentTab === "audit") {
+          document.getElementById("auditSection").classList.remove("hidden");
+          document
+            .getElementById("auditPaginationContainer")
+            .classList.remove("hidden");
+        }
+      }
+
+      // Fetch counts for badges on initial load
+      async function fetchBadgesCounts() {
+        try {
+          const articlesResponse = await apiFetch("/api/articles?limit=1");
+          const articlesResult = await articlesResponse.json();
+          if (articlesResult.success && articlesResult.pagination) {
+            const articlesBadge = document.getElementById("articlesCountBadge");
+            if (articlesBadge) {
+              articlesBadge.textContent =
+                articlesResult.pagination.total.toLocaleString();
+              articlesBadge.classList.toggle(
+                "hidden",
+                articlesResult.pagination.total === 0,
+              );
+            }
+          }
+          const logsResponse = await apiFetch("/api/logs");
+          const logsResult = await logsResponse.json();
+          if (logsResult.success && logsResult.data) {
+            const logsBadge = document.getElementById("logsCountBadge");
+            if (logsBadge) {
+              logsBadge.textContent = logsResult.data.length.toLocaleString();
+              logsBadge.classList.toggle(
+                "hidden",
+                logsResult.data.length === 0,
+              );
+            }
+          }
+
+          const auditResponse = await apiFetch("/api/audit-logs?limit=200");
+          const auditResult = await auditResponse.json();
+          if (auditResult.success && auditResult.data) {
+            const auditBadge = document.getElementById("auditCountBadge");
+            if (auditBadge) {
+              const loadedCount = Array.isArray(auditResult.data)
+                ? auditResult.data.length
+                : 0;
+              auditBadge.textContent = loadedCount.toLocaleString();
+              auditBadge.classList.toggle("hidden", loadedCount === 0);
+            }
+          }
+        } catch (error) {
+          if (isAuthError(error)) {
+            return;
+          }
+          console.error("Error fetching badges counts:", error);
+        }
+      }
+
+      // Initial load
+      updateApiConfigVisibility();
+      bootstrapApp();
+
+      // Update time every minute
+      setInterval(updateLastUpdated, 60000);
+    </script>
+  </body>
+</html>

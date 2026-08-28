@@ -1,0 +1,337 @@
+.oar-innovation-search {
+    --oar-search-border: #c9cdd1;
+    --oar-search-muted: #747474;
+    --oar-search-primary: #007a53;
+    --oar-search-primary-dark: #005f41;
+    --oar-search-surface: #fff;
+    color: inherit;
+}
+
+.oar-innovation-search__sr-only {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.oar-innovation-search__form {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 0.95fr)
+        minmax(0, 1fr)
+        minmax(250px, 1.15fr)
+        max-content;
+    grid-template-areas: "keyword benefit dates actions";
+    gap: 0.75rem;
+    align-items: end;
+    margin: 0 0 2.25rem;
+    padding: 0;
+    border: 0;
+    background: var(--oar-search-surface);
+}
+
+.oar-innovation-search .oar-innovation-search__form::before,
+.oar-innovation-search .oar-innovation-search__form::after {
+    display: none !important;
+    content: none !important;
+}
+
+.oar-innovation-search__form > input[type="hidden"] {
+    display: none !important;
+}
+
+.oar-innovation-search__field--keyword {
+    grid-area: keyword;
+}
+
+.oar-innovation-search__field--benefit {
+    grid-area: benefit;
+}
+
+.oar-innovation-search__field,
+.oar-innovation-search__dates {
+    min-width: 0;
+    margin: 0;
+}
+
+.oar-innovation-search__field label:not(.oar-innovation-search__sr-only),
+.oar-innovation-search__dates legend {
+    display: block;
+    margin: 0 0 0.7rem;
+    padding: 0;
+    color: var(--oar-search-muted);
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.4;
+}
+
+.oar-innovation-search__field input,
+.oar-innovation-search__field select {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 2.25rem;
+    margin: 0;
+    padding: 0.35rem 0.55rem;
+    border: 1px solid var(--oar-search-border);
+    border-radius: 2px;
+    background: var(--oar-search-surface);
+    box-shadow: none;
+    color: inherit;
+    font: inherit;
+}
+
+.oar-innovation-search__field input:focus,
+.oar-innovation-search__field select:focus {
+    border-color: var(--oar-search-primary);
+    outline: 2px solid rgba(0, 122, 83, 0.18);
+    outline-offset: 1px;
+}
+
+.oar-innovation-search__dates {
+    display: grid;
+    grid-area: dates;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    border: 0;
+    padding: 0;
+}
+
+.oar-innovation-search__dates legend {
+    grid-column: 1 / -1;
+}
+
+.oar-innovation-search__actions {
+    display: flex;
+    grid-area: actions;
+    flex-wrap: nowrap;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: flex-end;
+    white-space: nowrap;
+}
+
+.oar-innovation-search__submit {
+    min-height: 2.35rem;
+    padding: 0.45rem 1.25rem;
+    border: 1px solid var(--oar-search-primary);
+    border-radius: 2px;
+    background: var(--oar-search-primary);
+    color: #fff;
+    cursor: pointer;
+}
+
+.oar-innovation-search__submit:hover,
+.oar-innovation-search__submit:focus {
+    border-color: var(--oar-search-primary-dark);
+    background: var(--oar-search-primary-dark);
+    color: #fff;
+}
+
+.oar-innovation-search__reset {
+    padding: 0.55rem 0.25rem;
+    color: var(--oar-search-muted);
+}
+
+.oar-innovation-search__errors {
+    margin: 0 0 1.25rem;
+    padding: 0.8rem 1rem;
+    border-left: 4px solid #b42318;
+    background: #fff3f2;
+    color: #7a271a;
+}
+
+.oar-innovation-search__errors p,
+.oar-innovation-search__errors ul {
+    margin: 0;
+}
+
+.oar-innovation-search__errors ul {
+    padding-left: 1.5rem;
+}
+
+.oar-innovation-search__count {
+    margin: 0 0 1rem;
+    color: var(--oar-search-muted);
+}
+
+.oar-innovation-search__list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.oar-innovation-search__item {
+    padding: 0.8rem 0 1.35rem;
+    border: 0;
+}
+
+.oar-innovation-search__title {
+    margin: 0 0 0.55rem;
+    line-height: 1.35;
+}
+
+.oar-innovation-search__title a {
+    color: var(--oar-search-primary);
+    text-decoration: none;
+}
+
+.oar-innovation-search__title a:hover,
+.oar-innovation-search__title a:focus {
+    color: var(--oar-search-primary-dark);
+    text-decoration: underline;
+}
+
+.oar-innovation-search__meta,
+.oar-innovation-search__excerpt {
+    margin: 0.55rem 0 0;
+}
+
+.oar-innovation-search__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 0.45rem;
+    align-items: center;
+    color: inherit;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.oar-innovation-search__meta-label {
+    font-weight: 700;
+}
+
+.oar-innovation-search__author {
+    display: inline-flex;
+    gap: 0.35rem;
+    align-items: center;
+}
+
+.oar-innovation-search__benefits {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.65rem;
+}
+
+.oar-innovation-search__benefit {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    background: #e7f4ef;
+    color: #005a43;
+    font-size: 0.875em;
+    text-decoration: none;
+}
+
+.oar-innovation-search__benefit:hover,
+.oar-innovation-search__benefit:focus {
+    background: #d2eae1;
+    color: #003f30;
+}
+
+.oar-innovation-search__pagination {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+}
+
+.oar-innovation-search__pagination > ul.page-numbers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.15rem;
+    align-items: center;
+    justify-content: center;
+    margin: 2rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.oar-innovation-search__pagination > ul.page-numbers > li {
+    margin: 0;
+    padding: 0;
+}
+
+.oar-innovation-search__pagination a,
+.oar-innovation-search__pagination .current,
+.oar-innovation-search__pagination .dots {
+    box-sizing: border-box;
+    display: inline-flex;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    min-height: 2.25rem;
+    padding: 0 0.65rem;
+    border: 0;
+    border-radius: 999px;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    color: var(--oar-search-muted);
+    text-align: center;
+    text-decoration: none;
+}
+
+.oar-innovation-search__pagination a:hover,
+.oar-innovation-search__pagination a:focus {
+    background: #edf6f2;
+    color: var(--oar-search-primary-dark);
+}
+
+.oar-innovation-search__pagination a:focus-visible {
+    outline: 3px solid rgba(0, 122, 83, 0.28);
+    outline-offset: 2px;
+}
+
+.oar-innovation-search__pagination .current {
+    width: 2.25rem;
+    padding-right: 0;
+    padding-left: 0;
+    background: var(--oar-search-primary);
+    color: #fff;
+}
+
+.oar-innovation-search__pagination .prev,
+.oar-innovation-search__pagination .next,
+.oar-innovation-search__pagination .dots {
+    width: auto;
+}
+
+@media (max-width: 1050px) {
+    .oar-innovation-search__form {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-areas:
+            "keyword benefit"
+            "dates actions";
+    }
+}
+
+@media (max-width: 640px) {
+    .oar-innovation-search__form {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "keyword"
+            "benefit"
+            "dates"
+            "actions";
+    }
+}
+
+@media (max-width: 480px) {
+    .oar-innovation-search__dates {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .oar-innovation-search__dates legend {
+        grid-column: auto;
+    }
+
+    .oar-innovation-search__actions {
+        justify-content: flex-start;
+    }
+}

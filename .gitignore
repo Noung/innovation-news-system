@@ -1,0 +1,29 @@
+# Runtime secrets and local configuration
+.env
+.env.*
+scripts/.env
+!.env.example
+!scripts/.env.example
+
+# Runtime data and generated artifacts
+logs/
+cache/
+backups/
+deploy-bundles/
+dist/
+monorepo-staging/
+__pycache__/
+.pytest_cache/
+*.pyc
+*.log
+*.sql
+!scripts/*.sql
+!sql/migrations/*.sql
+*.zip
+*.bak*
+*.backup*
+
+# Dependencies / editor files
+node_modules/
+.agents/
+.DS_Store

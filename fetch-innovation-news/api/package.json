@@ -1,0 +1,19 @@
+{
+  "name": "innovation-news-admin-api",
+  "version": "1.0.0",
+  "description": "Admin API for Innovation News Sources Management",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "build:css": "tailwindcss -c ../tailwind.config.js -i ../assets/admin.css -o ../public/admin.css --minify"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "express": "^4.18.2",
+    "mysql2": "^3.6.5"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.17"
+  }
+}
