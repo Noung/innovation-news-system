@@ -43,3 +43,14 @@ INNOVATION_NEWS_ENV_FILE=/absolute/path/to/.env python3 scripts/test-integration
 - PM2 ใช้เฉพาะ Admin API; fetch jobs ใช้ OS cron
 
 ดูรายละเอียด deployment และ rollback ใน `docs/phase0-rollout.md`
+
+## Local development
+
+unit tests รันจาก clean clone ได้โดยชี้ environment ไปที่ไฟล์ตัวอย่าง:
+
+```powershell
+$env:INNOVATION_NEWS_ENV_FILE=(Resolve-Path .env.example)
+python -m unittest discover -s tests -v
+```
+
+การเปิดระบบเต็มต้องใช้ MySQL local และ `.env` สำหรับ local โดยเฉพาะ ห้ามชี้ local development ไปยัง PROD database หรือใช้ PROD integration credentials เป้าหมายระยะถัดไปคือ Docker Compose พร้อม sanitized schema, sample data และ mock integrations เพื่อทดสอบ end-to-end โดยไม่กระทบ PROD

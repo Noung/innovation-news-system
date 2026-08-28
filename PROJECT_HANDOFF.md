@@ -138,6 +138,19 @@ snapshot ใหม่ครอบคลุม `scripts/`, `tests/`, `sql/migrati
 
 ห้าม commit ไฟล์ `.env`, logs, cache, backup, release bundle, database dump หรือ secret ทุกชนิด
 
+### Local development status
+
+clean monorepo สามารถรัน unit tests ใน local ได้ทันทีโดยใช้ `.env.example`:
+
+```powershell
+$env:INNOVATION_NEWS_ENV_FILE=(Resolve-Path .env.example)
+python -m unittest discover -s tests -v
+```
+
+ระบบเต็มยังไม่ใช่ turnkey local runtime เพราะตั้งใจไม่รวม `.env`, database dump และ `node_modules` การเปิด Admin API/UI และทดสอบ fetch flow แบบ end-to-end ต้องใช้ MySQL local ที่แยกจาก PROD พร้อม schema และข้อมูลตัวอย่างที่ผ่านการ sanitize
+
+milestone สำหรับพัฒนาต่อหลังตรวจ source preflight/ผล cron คือสร้าง Local Development Environment ด้วย Docker Compose ซึ่งประกอบด้วย MySQL, sanitized schema, sample data, Admin API/UI, `DRY_RUN=1` และ mock integrations สำหรับ WordPress, Telegram และ LINE ห้ามนำ PROD database หรือ PROD credentials มาใช้เป็น local test environment
+
 ## 6. วิธีเริ่มงานใน session ใหม่
 
 1. เปิดและอ่าน `PROJECT_HANDOFF.md` ทั้งไฟล์
@@ -145,6 +158,7 @@ snapshot ใหม่ครอบคลุม `scripts/`, `tests/`, `sql/migrati
 3. อย่า deploy หรือแก้ PROD ซ้ำก่อนตรวจสถานะจริง
 4. ทำ source preflight ในหัวข้อ 4 หรืออ่าน log รอบ 09:00 หาก cron ทำงานไปแล้ว
 5. ตรวจ `git remote -v` และยืนยันว่าเป็น private monorepo `innovation-news-system`
+6. เมื่อสถานะ PROD หลัง deployment ผ่านแล้ว ให้เริ่มออกแบบ Local Development Environment ตามหัวข้อด้านบน
 
 ## 7. ข้อควรจำ
 
