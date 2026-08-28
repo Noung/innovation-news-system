@@ -2,6 +2,7 @@
 .env
 .env.*
 scripts/.env
+docker/local.env
 !.env.example
 !scripts/.env.example
 
@@ -12,6 +13,7 @@ backups/
 deploy-bundles/
 dist/
 monorepo-staging/
+local-data/
 __pycache__/
 .pytest_cache/
 *.pyc
@@ -19,11 +21,13 @@ __pycache__/
 *.sql
 !scripts/*.sql
 !sql/migrations/*.sql
+!docker/mysql/init/*.sql
 *.zip
 *.bak*
 *.backup*
 
 # Dependencies / editor files
 node_modules/
+.venv/
 .agents/
 .DS_Store

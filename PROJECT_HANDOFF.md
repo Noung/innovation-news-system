@@ -34,7 +34,7 @@
 
 ### Local verification
 
-- ชุดทดสอบ local ผ่านทั้งหมด `142` tests
+- ชุดทดสอบ local ผ่านทั้งหมด `149` tests (`142` tests เดิม + `7` local-development safety tests)
 - มีเอกสาร audit และเปรียบเทียบ PROD ที่:
   - `docs/file-hygiene-audit.md`
   - `docs/prod-backup-comparison-2026-08-28.md`
@@ -78,6 +78,17 @@
 
 การทดสอบนี้ไม่ได้สร้างโพสต์และไม่ได้ส่งข้อความ Telegram/LINE
 
+### Source URL compatibility preflight
+
+ตรวจแบบ read-only หลัง Phase 0 แล้วเมื่อ 2026-08-28:
+
+- active sources `16` แหล่ง
+- ทุกแหล่งเป็น `URL=OK`
+- ไม่มี active source ที่ใช้ slug `newsapi` จึงไม่มี NewsAPI key gate ในรอบนี้
+- ไม่พบ `URL=BLOCKED` หรือ `API_KEY=MISSING`
+
+ผลนี้ยืนยัน source configuration เท่านั้น ยังไม่ใช่หลักฐานว่า cron รอบ 09:00 ดึงและเผยแพร่ข่าวสำเร็จ
+
 ### Scheduler ปัจจุบันบน PROD
 
 ใช้ OS cron เป็นเจ้าของ scheduler:
@@ -89,9 +100,9 @@
 
 ## 4. งานถัดไปที่ยังไม่ได้ทำ
 
-ยังไม่ได้ตรวจ compatibility ของ `news_sources.source_url` หลัง Phase 0 ห้ามสรุปว่า scheduled fetch รอบใหม่ผ่านจนกว่าจะตรวจข้อนี้หรือเห็นผลรอบ 09:00 หลัง deployment
+ตรวจ compatibility ของ `news_sources.source_url` หลัง Phase 0 ผ่านแล้ว งาน PROD ที่ยังค้างคืออ่านผล cron รอบ 09:00 หลัง deployment โดยห้ามสรุปว่า scheduled fetch รอบใหม่ผ่านจนกว่าจะเห็นผลรอบจริง
 
-คำสั่งต่อไปเป็น read-only: อ่านเฉพาะ `id`, `slug` และ URL จากฐานข้อมูล แล้วแสดงเพียง `OK/BLOCKED`; ไม่แสดง URL หรือ API key ไม่ดึงข่าว ไม่เขียนฐานข้อมูล และไม่ส่งข้อความ
+คำสั่ง source preflight ต่อไปนี้เก็บไว้สำหรับตรวจซ้ำในอนาคต เป็น read-only: อ่านเฉพาะ `id`, `slug` และ URL จากฐานข้อมูล แล้วแสดงเพียง `OK/BLOCKED`; ไม่แสดง URL หรือ API key ไม่ดึงข่าว ไม่เขียนฐานข้อมูล และไม่ส่งข้อความ
 
 ```bash
 cd /home/kittisak/.openclaw/workspace
@@ -147,18 +158,53 @@ $env:INNOVATION_NEWS_ENV_FILE=(Resolve-Path .env.example)
 python -m unittest discover -s tests -v
 ```
 
-ระบบเต็มยังไม่ใช่ turnkey local runtime เพราะตั้งใจไม่รวม `.env`, database dump และ `node_modules` การเปิด Admin API/UI และทดสอบ fetch flow แบบ end-to-end ต้องใช้ MySQL local ที่แยกจาก PROD พร้อม schema และข้อมูลตัวอย่างที่ผ่านการ sanitize
+ระบบเต็มตั้งใจไม่รวม `.env`, database dump และ `node_modules` แต่มี Docker Compose local runtime ที่แยกจาก PROD พร้อม MySQL, schema baseline และข้อมูลตัวอย่างที่ผ่านการ sanitize
 
-milestone สำหรับพัฒนาต่อหลังตรวจ source preflight/ผล cron คือสร้าง Local Development Environment ด้วย Docker Compose ซึ่งประกอบด้วย MySQL, sanitized schema, sample data, Admin API/UI, `DRY_RUN=1` และ mock integrations สำหรับ WordPress, Telegram และ LINE ห้ามนำ PROD database หรือ PROD credentials มาใช้เป็น local test environment
+สร้างและทดสอบ Local Development Environment แล้วที่ `compose.yaml` ประกอบด้วย MySQL, sanitized schema, synthetic sample data, Admin API/UI, `DRY_RUN=1` และ HTTPS mock integrations สำหรับ source, WordPress, Telegram และ LINE โดย MySQL, mock และ Admin อยู่ใน Docker internal network ส่วน gateway ที่ไม่มี credentials เป็น service เดียวที่ publish พอร์ต `127.0.0.1:3001`
+
+รายละเอียดอยู่ที่ `docs/local-development.md` และ local baseline อยู่ที่ `docker/mysql/init/` ชุดนี้สร้างจาก application query contract ไม่ใช่ PROD dump และห้ามนำไปใช้เป็น production migration
+
+ตรวจแล้ว:
+
+- `docker compose config`: `PASS`
+- Docker image build และ container smoke test บน Docker Desktop 29.6.2: `PASS`
+- services `mysql`, `mock-integrations`, `admin` และ `gateway`: `healthy`
+- Admin `/api/health`: `status=ok`, `database=ok`
+- Admin login, protected APIs และ static UI assets: HTTP `200`
+- integration preflight แบบไม่มี `--send`: WordPress CPT + taxonomy + 20 terms `SUCCESS`; Telegram/LINE configured และข้ามการส่ง
+- dry-run fetch ก่อนสลับ snapshot: พบข่าวสังเคราะห์ 2 รายการ, เพิ่ม 1 รายการใน local MySQL และ delivery statuses เป็น `dry_run`; หลังสลับยังไม่รัน fetch เพื่อคงข่าวนำเข้าไว้ที่ `131`
+- local-development safety tests: `7` tests, `OK`
+- Python regression tests ทั้งหมด: `149` tests, `OK`
+- Python/Node syntax และ `git diff --check`: `PASS`
+- `npm audit` ทั้ง production dependencies และชุดเต็ม: `0 vulnerabilities`
+
+local stack พร้อมใช้งานที่ `http://127.0.0.1:3001` โดยไม่ใช้ PROD credentials และไม่มีเส้นทางเขียนกลับ PROD
+
+### Local sanitized PROD snapshot
+
+หลังผู้ใช้เตรียม snapshot วันที่ 2026-08-28 ได้ตรวจและ restore ผ่านฐาน staging ที่แยกจากฐานหลัก แล้วสร้าง sanitized dump ซึ่งถูกเก็บใต้ `local-data/` ที่ ignore ทั้งจาก Git และ Docker build context
+
+พบ query parameter ที่เข้าข่าย API key ใน raw `news_sources` 1 จุด จึงไม่ได้นำ raw dump เข้าใช้โดยตรง ขั้น sanitize ที่ทำแล้วคือแทน PROD source URLs ด้วย mock URLs, ปิด PROD sources ทั้งหมด, ล้าง PROD admin audit rows, ล้าง `fetch_logs.error_message` และเปลี่ยน views เป็น `SQL SECURITY INVOKER` พร้อม local-only definer จากนั้น restore ไฟล์ sanitized เข้า local `innovation_news` และลบฐาน staging/validation ชั่วคราวแล้ว
+
+สถานะ local database หลังสลับและก่อนการ fetch ทดสอบรอบใหม่:
+
+- ข่าวจาก snapshot `131` รายการ
+- sources รวม `18`: PROD-derived inactive `17` + active `local-mock` `1`
+- fetch logs `134` รายการ
+- compatibility procedures `save_article` และ `log_fetch_operation` ครบ `2`
+- login, `/api/sources`, `/api/articles`, `/api/logs`, dashboard และ integration preflight แบบไม่มี `--send`: `PASS`
+- PROD ไม่ถูกเชื่อมต่อหรือเขียนข้อมูลจาก Docker local
+
+เพิ่ม `docker/mysql/init/003_local_runtime_overlay.sql` เพื่อปิด imported sources, สร้าง/อัปเดต `local-mock` และคืน procedures ที่ fetcher ต้องใช้ ไฟล์ raw/sanitized snapshot ไม่อยู่ใน Git การสั่ง `docker compose down --volumes` จะลบ snapshot ใน volume และกลับไปใช้ synthetic baseline เมื่อเริ่ม stack ใหม่
 
 ## 6. วิธีเริ่มงานใน session ใหม่
 
 1. เปิดและอ่าน `PROJECT_HANDOFF.md` ทั้งไฟล์
 2. ตรวจ `docs/phase0-rollout.md` และ `docs/prod-backup-comparison-2026-08-28.md`
 3. อย่า deploy หรือแก้ PROD ซ้ำก่อนตรวจสถานะจริง
-4. ทำ source preflight ในหัวข้อ 4 หรืออ่าน log รอบ 09:00 หาก cron ทำงานไปแล้ว
+4. source preflight ผ่านแล้ว; อ่าน log รอบ 09:00 เพื่อยืนยัน scheduled fetch จริง
 5. ตรวจ `git remote -v` และยืนยันว่าเป็น private monorepo `innovation-news-system`
-6. เมื่อสถานะ PROD หลัง deployment ผ่านแล้ว ให้เริ่มออกแบบ Local Development Environment ตามหัวข้อด้านบน
+6. ตรวจ `docker compose ps` และพัฒนา/ทดสอบต่อด้วย Local Development Environment ตาม `docs/local-development.md`
 
 ## 7. ข้อควรจำ
 

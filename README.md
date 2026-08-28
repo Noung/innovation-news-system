@@ -53,4 +53,6 @@ $env:INNOVATION_NEWS_ENV_FILE=(Resolve-Path .env.example)
 python -m unittest discover -s tests -v
 ```
 
-การเปิดระบบเต็มต้องใช้ MySQL local และ `.env` สำหรับ local โดยเฉพาะ ห้ามชี้ local development ไปยัง PROD database หรือใช้ PROD integration credentials เป้าหมายระยะถัดไปคือ Docker Compose พร้อม sanitized schema, sample data และ mock integrations เพื่อทดสอบ end-to-end โดยไม่กระทบ PROD
+ระบบเต็มรันผ่าน Docker Compose โดยใช้ MySQL และ dummy environment สำหรับ local โดยเฉพาะ ห้ามชี้ local development ไปยัง PROD database หรือใช้ PROD integration credentials
+
+Docker Compose สำหรับ local-only development อยู่ที่ [`compose.yaml`](compose.yaml) มี sanitized schema, synthetic baseline, runtime safety overlay และ mock integrations สำหรับทดสอบ end-to-end โดยไม่กระทบ PROD เครื่องพัฒนาสามารถ restore sanitized snapshot ลง named volume ได้ โดย raw/sanitized dumps ต้องอยู่ใต้ `local-data/` ซึ่งไม่เข้า Git หรือ Docker build context ดูวิธีใช้และข้อจำกัดที่ [`docs/local-development.md`](docs/local-development.md)

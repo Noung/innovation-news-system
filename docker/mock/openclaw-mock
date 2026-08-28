@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+
+case "${1:-}" in
+  message)
+    printf '%s\n' 'LOCAL_MOCK_OPENCLAW=accepted'
+    ;;
+  *)
+    printf '%s\n' 'LOCAL_MOCK_OPENCLAW=unsupported-command' >&2
+    exit 64
+    ;;
+esac
