@@ -70,6 +70,35 @@ snapshot วันที่ 2026-08-28 ผ่านการ restore/sanitize/re
 
 การรัน `docker compose down --volumes` จะลบ snapshot ที่ restore อยู่ใน named volume และกลับไปสร้าง synthetic baseline จาก init SQL เมื่อ `docker compose up -d` ครั้งถัดไป
 
+### ย้าย sanitized snapshot ไป workstation ใหม่
+
+Docker named volume และ `local-data/` ไม่ถูก push ไปกับ Git หากต้องการฐานข่าว 131 รายการเดิม ให้คัดลอกเฉพาะไฟล์ sanitized ต่อไปนี้ผ่านพื้นที่ส่วนตัว:
+
+```text
+local-data/prod-snapshot/sanitized/innovation_news-local-sanitized-20260828.sql
+SHA256 a0d8fa0743a5114f66c851507a57afdd927808f5da1b7d7f2053a7600a663302
+```
+
+บน workstation ใหม่ ให้ clone/pull repository, วางไฟล์ไว้ที่ path เดิม แล้วตรวจ checksum:
+
+```powershell
+Get-FileHash .\local-data\prod-snapshot\sanitized\innovation_news-local-sanitized-20260828.sql -Algorithm SHA256
+```
+
+เริ่ม MySQL/mock, หยุด Admin ระหว่างเปลี่ยนฐาน แล้ว restore sanitized dump กับ local runtime overlay:
+
+```powershell
+docker compose up -d mysql mock-integrations
+docker compose stop admin gateway
+docker compose exec -T mysql mysql -uroot -plocal-only-root-password -e "DROP DATABASE IF EXISTS innovation_news; CREATE DATABASE innovation_news CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+cmd.exe /d /c "docker compose exec -T mysql mysql -uroot -plocal-only-root-password innovation_news < local-data\prod-snapshot\sanitized\innovation_news-local-sanitized-20260828.sql"
+cmd.exe /d /c "docker compose exec -T mysql mysql -uroot -plocal-only-root-password innovation_news < docker\mysql\init\003_local_runtime_overlay.sql"
+docker compose up -d admin gateway
+docker compose ps
+```
+
+ขั้น restore นี้ลบเฉพาะฐาน `innovation_news` ใน Docker local ของ workstation ใหม่ ห้ามเปลี่ยน host หรือ credentials ในคำสั่งให้ชี้ไป PROD หลัง restore ต้องมี sources 18 รายการ, active เฉพาะ `local-mock`, ข่าว 131 รายการ และ procedures 2 รายการ
+
 ## เริ่มใช้งาน
 
 ต้องเปิด Docker Desktop/daemon ก่อน จาก repository root รัน:

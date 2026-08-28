@@ -4,6 +4,28 @@
 
 เอกสารนี้เป็นจุดเริ่มต้นสำหรับทำงานต่อในเครื่องหรือ workspace ใหม่ ห้ามบันทึกรหัสผ่าน token, Application Password, API key หรือค่าจาก `.env` ลงในไฟล์นี้
 
+## 0. สถานะก่อนย้าย workstation
+
+บันทึกเมื่อ 2026-08-28 ก่อนออกจาก workstation `C:\laragon\www\innovation-news-system`:
+
+- ผู้ใช้ยืนยันว่า PROD ทำงานถูกต้องแล้ว
+- แนวทางต่อจากนี้คือพัฒนาและทดสอบใน Docker local, ทยอย commit/push เข้า private `origin/main` และ deploy PROD เป็นขั้นตอนแยกที่ต้องมี diff, tests, backup และ approval
+- Git `main` push ถึง `origin/main` แล้ว โดยมี Docker local environment ที่ commits `828fa30` และ `0caade1`
+- local services `mysql`, `mock-integrations`, `admin` และ `gateway` เป็น `healthy`
+- local Admin ใช้งานได้ที่ `http://127.0.0.1:3001`
+- local database มีข่าว `131`, sources `18` (active เฉพาะ `local-mock` 1), fetch logs `134`, local audit rows `2` และ procedures `2`
+- regression tests ล่าสุดผ่าน `149/149`; Compose config, Node syntax และ diff checks ผ่าน
+- ไม่มี PROD credentials หรือเส้นทางเขียนกลับ PROD ใน local stack
+
+สิ่งที่ **ไม่เดินทางไปกับ Git** คือ Docker named volume และไฟล์ใต้ `local-data/` หากต้องการข้อมูลข่าว 131 รายการเหมือนเครื่องนี้ ต้องคัดลอกเฉพาะ sanitized dump ต่อไปนี้ผ่านสื่อ/พื้นที่ส่วนตัวแยกจาก Git:
+
+```text
+local-data/prod-snapshot/sanitized/innovation_news-local-sanitized-20260828.sql
+SHA256 a0d8fa0743a5114f66c851507a57afdd927808f5da1b7d7f2053a7600a663302
+```
+
+อย่าคัดลอก raw dump หากไม่จำเป็น เพราะตรวจพบ query parameter ที่เข้าข่าย API key อยู่ 1 จุด หลังยืนยันว่า sanitized file สำรองสำเร็จควรลบ raw dump ออกจาก workstation เดิม
+
 ## 1. ภาพรวมระบบ
 
 โครงการให้บริการอยู่สองเครื่องแยกกัน:
@@ -98,9 +120,9 @@
 0 9 * * * /usr/bin/python3 /home/kittisak/.openclaw/workspace/scripts/fetch-it24hrs-news.py >> /home/kittisak/.openclaw/workspace/logs/cron-it24hrs.log 2>&1
 ```
 
-## 4. งานถัดไปที่ยังไม่ได้ทำ
+## 4. สถานะ PROD และการตรวจซ้ำในอนาคต
 
-ตรวจ compatibility ของ `news_sources.source_url` หลัง Phase 0 ผ่านแล้ว งาน PROD ที่ยังค้างคืออ่านผล cron รอบ 09:00 หลัง deployment โดยห้ามสรุปว่า scheduled fetch รอบใหม่ผ่านจนกว่าจะเห็นผลรอบจริง
+ตรวจ compatibility ของ `news_sources.source_url` หลัง Phase 0 ผ่านแล้ว และผู้ใช้ยืนยันเมื่อ 2026-08-28 ว่า PROD ทำงานถูกต้อง การอ่าน cron logs รอบ 09:00 ยังไม่ได้เก็บเป็นหลักฐานใน repository แต่ไม่เป็น blocker ของ local development หากจะ deploy PROD รอบถัดไปให้ตรวจสถานะ/log จริงแบบ read-only ใหม่ก่อนทุกครั้ง
 
 คำสั่ง source preflight ต่อไปนี้เก็บไว้สำหรับตรวจซ้ำในอนาคต เป็น read-only: อ่านเฉพาะ `id`, `slug` และ URL จากฐานข้อมูล แล้วแสดงเพียง `OK/BLOCKED`; ไม่แสดง URL หรือ API key ไม่ดึงข่าว ไม่เขียนฐานข้อมูล และไม่ส่งข้อความ
 
@@ -114,7 +136,7 @@ INNOVATION_NEWS_ENV_FILE=/home/kittisak/.openclaw/workspace/.env /usr/bin/python
 - ทุกแหล่งเป็น `URL=OK`
 - ถ้ามี slug `newsapi` ต้องเป็น `API_KEY=READY`
 
-หากย้าย workspace หลังเวลา 09:00 ให้ตรวจผลรอบจริงก่อนด้วย:
+หากต้อง re-audit scheduler หรือเตรียม deploy PROD รอบถัดไป ให้ตรวจผลรอบจริงก่อนด้วย:
 
 ```bash
 tail -n 200 /home/kittisak/.openclaw/workspace/logs/cron-innovation-news-mysql.log
@@ -200,11 +222,13 @@ local stack พร้อมใช้งานที่ `http://127.0.0.1:3001` �
 ## 6. วิธีเริ่มงานใน session ใหม่
 
 1. เปิดและอ่าน `PROJECT_HANDOFF.md` ทั้งไฟล์
-2. ตรวจ `docs/phase0-rollout.md` และ `docs/prod-backup-comparison-2026-08-28.md`
-3. อย่า deploy หรือแก้ PROD ซ้ำก่อนตรวจสถานะจริง
-4. source preflight ผ่านแล้ว; อ่าน log รอบ 09:00 เพื่อยืนยัน scheduled fetch จริง
-5. ตรวจ `git remote -v` และยืนยันว่าเป็น private monorepo `innovation-news-system`
-6. ตรวจ `docker compose ps` และพัฒนา/ทดสอบต่อด้วย Local Development Environment ตาม `docs/local-development.md`
+2. clone repository หรือรัน `git pull --ff-only origin main` แล้วตรวจ `git remote -v` ว่าเป็น private monorepo `innovation-news-system`
+3. ตรวจ `docs/phase0-rollout.md` และ `docs/prod-backup-comparison-2026-08-28.md`
+4. อย่า deploy หรือแก้ PROD ซ้ำก่อนตรวจสถานะจริง; ผู้ใช้ยืนยันว่า PROD ทำงานถูกต้อง ณ ตอนส่งมอบนี้
+5. เปิด Docker Desktop, ใช้ context `desktop-linux` และเริ่ม local stack ตาม `docs/local-development.md`
+6. หากไม่มี sanitized dump เครื่องใหม่จะเริ่มด้วย synthetic baseline ซึ่งยังพัฒนาและทดสอบได้ตามปกติ
+7. หากต้องการข่าว 131 รายการเดิม ให้คัดลอก sanitized dump แยกจาก Git, ตรวจ SHA256 และทำขั้น restore ใน `docs/local-development.md`
+8. ตรวจ `docker compose ps`, login, `/api/health` และรัน tests ก่อนเริ่มแก้โค้ด
 
 ## 7. ข้อควรจำ
 
