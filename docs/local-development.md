@@ -129,6 +129,41 @@ docker compose exec admin python scripts/test-integrations.py
 docker compose exec admin python scripts/fetch-innovation-news-mysql.py
 ```
 
+## ติดตั้งหรือ host บนเครื่องอื่นด้วย Docker
+
+### เครื่องพัฒนาหรือ workstation ส่วนตัว
+
+กรณีใช้งาน Admin จากเครื่องเดียวกับ Docker host รองรับด้วย Compose ปัจจุบันโดยตรง:
+
+1. ติดตั้ง Docker Desktop หรือ Docker Engine ที่รองรับ Docker Compose
+2. clone repository แล้ว checkout/pull `main`
+3. หากต้องการข้อมูล snapshot เดิม ให้คัดลอก sanitized dump แยกจาก Git และทำขั้น restore ด้านบน
+4. รัน `docker compose build` และ `docker compose up -d`
+5. ตรวจ `docker compose ps` จนทั้งสี่ services เป็น `healthy`
+6. เปิด `http://127.0.0.1:3001` จาก Docker host เครื่องนั้น
+
+Compose นี้ publish เพียง `127.0.0.1:3001`; MySQL, mock และ Admin ไม่ publish port โดยตรง ข้อมูลถาวรอยู่ใน named volume `mysql-data` ของ Compose project ไม่ได้อยู่ใน Git
+
+### Docker host ที่ต้องเข้าใช้งานจากเครื่องอื่นผ่าน LAN/VPN
+
+Compose ปัจจุบันตั้งใจ **ไม่รองรับ remote access โดยตรง** ห้ามแก้ port binding เป็น `0.0.0.0:3001` แล้วเปิด firewall ทันที หากต้อง host สำหรับทีม ให้จัดทำ deployment override แยกและ review อย่างน้อยเรื่องต่อไปนี้:
+
+- วาง reverse proxy ที่มี HTTPS หน้า Admin และ publish เฉพาะ reverse proxy
+- จำกัดผู้เข้าถึงด้วย VPN, IP allowlist หรือ firewall policy
+- ใช้ admin password/session secret ที่สร้างใหม่และเก็บในไฟล์ env ที่ไม่เข้า Git
+- ห้าม publish MySQL, mock integration หรือ Docker socket
+- กำหนด backup/restore ของ named volume และทดสอบ rollback
+- pin image versions, เปิด health checks และกำหนด restart policy ตามสภาพแวดล้อมจริง
+- ตรวจ trusted proxy, forwarded headers, cookie security และ TLS termination ก่อนเปิดใช้งาน
+
+ต้องสร้าง Compose override หรือ deployment bundle แยกจาก local defaults โดยไม่แก้ `docker/local.env.example` ให้มี credential จริง
+
+### ขอบเขตของ production hosting
+
+stack ปัจจุบันเป็น **local development เท่านั้น** เพราะใช้ dummy credentials, `DRY_RUN=1`, synthetic/local snapshot data และ mock integrations จึงห้ามนำ `compose.yaml` ชุดนี้ไปแทน PROD โดยตรง การ deploy production ต้องมี production-specific secrets/configuration, database migration/backup, outbound integration review, TLS, monitoring และ rollback plan พร้อม approval แยกต่างหาก
+
+หลังแก้โค้ดบน Docker host เครื่องอื่น ให้ใช้ workflow เดิม: tests → smoke test → รายงาน → commit/push จากนั้นจึงเตรียม PROD release เป็นอีกขั้นหนึ่ง การ push `main` ไม่เท่ากับ deploy
+
 ## Reset local data
 
 หยุด containers โดยเก็บ database volume:

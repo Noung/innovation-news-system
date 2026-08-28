@@ -16,6 +16,7 @@
 - local database มีข่าว `131`, sources `18` (active เฉพาะ `local-mock` 1), fetch logs `134`, local audit rows `2` และ procedures `2`
 - regression tests ล่าสุดผ่าน `149/149`; Compose config, Node syntax และ diff checks ผ่าน
 - ไม่มี PROD credentials หรือเส้นทางเขียนกลับ PROD ใน local stack
+- คู่มือ `docs/local-development.md` แยกการติดตั้งบน workstation, การ host ผ่าน LAN/VPN และ production hosting boundary; Compose ปัจจุบันรองรับเฉพาะ local loopback โดยตรง
 
 สิ่งที่ **ไม่เดินทางไปกับ Git** คือ Docker named volume และไฟล์ใต้ `local-data/` หากต้องการข้อมูลข่าว 131 รายการเหมือนเครื่องนี้ ต้องคัดลอกเฉพาะ sanitized dump ต่อไปนี้ผ่านสื่อ/พื้นที่ส่วนตัวแยกจาก Git:
 
@@ -229,6 +230,7 @@ local stack พร้อมใช้งานที่ `http://127.0.0.1:3001` �
 6. หากไม่มี sanitized dump เครื่องใหม่จะเริ่มด้วย synthetic baseline ซึ่งยังพัฒนาและทดสอบได้ตามปกติ
 7. หากต้องการข่าว 131 รายการเดิม ให้คัดลอก sanitized dump แยกจาก Git, ตรวจ SHA256 และทำขั้น restore ใน `docs/local-development.md`
 8. ตรวจ `docker compose ps`, login, `/api/health` และรัน tests ก่อนเริ่มแก้โค้ด
+9. หากต้องให้เครื่องอื่นเข้า Admin ผ่าน LAN/VPN ให้อ่านหัวข้อ Docker hosting ใน `docs/local-development.md` และออกแบบ reverse proxy/TLS/access control เป็น deployment แยก ห้ามเปิด `0.0.0.0:3001` จาก local Compose ตรง ๆ
 
 ## 7. ข้อควรจำ
 
