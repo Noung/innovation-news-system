@@ -134,7 +134,7 @@ snapshot ใหม่ครอบคลุม `scripts/`, `tests/`, `sql/migrati
 - Python tests: `142` tests, `OK`
 - Node syntax: `PASS`
 
-GitHub remote ของ monorepo ใหม่ยังรอสร้างเป็น private repository ชื่อ `innovation-news-system` เนื่องจากเครื่องนี้ยังไม่มี GitHub CLI
+สร้าง private GitHub repository แล้วที่ `https://github.com/Noung/innovation-news-system` โดย `origin/main` เริ่มจาก clean snapshot commit `f200c00` และใช้ repository นี้เป็น canonical source สำหรับ workspace ใหม่
 
 ห้าม commit ไฟล์ `.env`, logs, cache, backup, release bundle, database dump หรือ secret ทุกชนิด
 
