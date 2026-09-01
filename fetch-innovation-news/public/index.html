@@ -505,7 +505,9 @@
                   class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-600"
                 >
                   อัปเดต Dashboard:
-                  <span id="dashboardGeneratedAt" class="font-semibold text-gray-900"
+                  <span
+                    id="dashboardGeneratedAt"
+                    class="font-semibold text-gray-900"
                     >-</span
                   >
                 </div>
@@ -573,6 +575,7 @@
 
           <div class="mb-6">
             <div
+              id="dashboardSourceHealthCard"
               class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
             >
               <div
@@ -590,6 +593,25 @@
                   >-</span
                 >
               </div>
+              <div
+                id="dashboardSourceHealthFilterChip"
+                class="hidden px-5 py-3 border-b border-gray-200 bg-primary-50"
+              >
+                <div class="flex items-center justify-between gap-3">
+                  <span
+                    class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-primary-100 text-primary-700"
+                  >
+                    กำลังกรอง: เฉพาะ source ที่ควรตรวจ
+                  </span>
+                  <button
+                    type="button"
+                    onclick="clearDashboardSourceHealthFilter()"
+                    class="text-xs font-semibold text-primary-600 hover:text-primary-700"
+                  >
+                    ล้างตัวกรอง ✕
+                  </button>
+                </div>
+              </div>
               <div class="overflow-x-auto custom-scrollbar">
                 <table class="w-full text-sm text-left min-w-[900px]">
                   <thead class="bg-gray-50 border-b border-gray-200">
@@ -600,13 +622,19 @@
                       <th class="px-4 py-3 font-semibold text-gray-700">
                         ประเภท
                       </th>
-                      <th class="px-4 py-3 font-semibold text-gray-700 text-center">
+                      <th
+                        class="px-4 py-3 font-semibold text-gray-700 text-center"
+                      >
                         สถานะ
                       </th>
-                      <th class="px-4 py-3 font-semibold text-gray-700 text-center">
+                      <th
+                        class="px-4 py-3 font-semibold text-gray-700 text-center"
+                      >
                         ข่าว 7 วัน
                       </th>
-                      <th class="px-4 py-3 font-semibold text-gray-700 text-center">
+                      <th
+                        class="px-4 py-3 font-semibold text-gray-700 text-center"
+                      >
                         Success 7 วัน
                       </th>
                       <th class="px-4 py-3 font-semibold text-gray-700">
@@ -1257,7 +1285,9 @@
                   <optgroup label="พร้อมใช้งาน">
                     <option value="rss">RSS</option>
                     <option value="html">HTML</option>
-                    <option value="api">API (WordPress API / Generic JSON)</option>
+                    <option value="api">
+                      API (WordPress API / Generic JSON)
+                    </option>
                   </optgroup>
                   <optgroup label="ยังไม่รองรับ">
                     <option value="" disabled>JSON Feed</option>
@@ -1302,10 +1332,7 @@
                     <option value="wordpress">WordPress API</option>
                     <option value="generic_json">Generic JSON API</option>
                   </select>
-                  <p
-                    id="apiVariantHint"
-                    class="mt-2 text-xs text-gray-500"
-                  >
+                  <p id="apiVariantHint" class="mt-2 text-xs text-gray-500">
                     ใช้กับ endpoint แบบ `/wp-json/wp/v2/posts`
                   </p>
                 </div>
@@ -1314,8 +1341,8 @@
                   <div
                     class="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-800"
                   >
-                    กรอก mapping แบบ dot-path เช่น `data.items`, `title.rendered`,
-                    `url`, `published_at`
+                    กรอก mapping แบบ dot-path เช่น `data.items`,
+                    `title.rendered`, `url`, `published_at`
                   </div>
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -1510,11 +1537,19 @@
               <div
                 class="mt-3 rounded-lg border border-cyan-200 bg-white/70 p-3 text-xs text-cyan-900 space-y-1"
               >
-                <div><span class="font-semibold">items_path:</span> `data.items`</div>
-                <div><span class="font-semibold">title_field:</span> `title`</div>
+                <div>
+                  <span class="font-semibold">items_path:</span> `data.items`
+                </div>
+                <div>
+                  <span class="font-semibold">title_field:</span> `title`
+                </div>
                 <div><span class="font-semibold">link_field:</span> `url`</div>
-                <div><span class="font-semibold">date_field:</span> `published_at`</div>
-                <div><span class="font-semibold">summary_field:</span> `summary`</div>
+                <div>
+                  <span class="font-semibold">date_field:</span> `published_at`
+                </div>
+                <div>
+                  <span class="font-semibold">summary_field:</span> `summary`
+                </div>
               </div>
             </div>
 
@@ -1600,6 +1635,7 @@
       let currentSourcesPage = 1;
       let currentAuditPage = 1;
       let currentDashboardSourceHealthPage = 1;
+      let dashboardSourceHealthFilter = false;
       const ITEMS_PER_PAGE = 20;
       const DASHBOARD_SOURCE_HEALTH_PER_PAGE = 20;
       const AUTH_REQUIRED_ERROR = "AUTH_REQUIRED";
@@ -1898,6 +1934,9 @@
 
       // Switch between tabs
       function switchTab(tab) {
+        if (tab === "dashboard" && currentTab !== "dashboard") {
+          dashboardSourceHealthFilter = false;
+        }
         currentTab = tab;
 
         // Update tab buttons
@@ -1987,7 +2026,9 @@
         const trends = data.trends || {};
         const actionableAlerts = data.actionable_alerts || [];
         const generatedAt = document.getElementById("dashboardGeneratedAt");
-        const healthCount = document.getElementById("dashboardSourceHealthCount");
+        const healthCount = document.getElementById(
+          "dashboardSourceHealthCount",
+        );
 
         if (generatedAt) {
           generatedAt.textContent = data.generated_at
@@ -2003,7 +2044,41 @@
         renderDashboardSourceSummary(kpis, healthRows);
         renderDashboardTrends(trends);
         renderDashboardActionableAlerts(actionableAlerts);
-        renderDashboardSourceHealth(healthRows, currentDashboardSourceHealthPage);
+        renderDashboardSourceHealth(
+          healthRows,
+          currentDashboardSourceHealthPage,
+        );
+        renderDashboardSourceHealthFilterChip();
+      }
+
+      function renderDashboardSourceHealthFilterChip() {
+        const chip = document.getElementById("dashboardSourceHealthFilterChip");
+        if (!chip) return;
+        chip.classList.toggle("hidden", !dashboardSourceHealthFilter);
+      }
+
+      function filterDashboardSourceHealthNeedsAttention() {
+        dashboardSourceHealthFilter = true;
+        const rows = dashboardOverview?.source_health || [];
+        renderDashboardSourceHealth(rows, 1);
+        renderDashboardSourceHealthFilterChip();
+        document
+          .getElementById("dashboardSourceHealthCard")
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      function clearDashboardSourceHealthFilter() {
+        dashboardSourceHealthFilter = false;
+        const rows = dashboardOverview?.source_health || [];
+        renderDashboardSourceHealth(rows, 1);
+        renderDashboardSourceHealthFilterChip();
+      }
+
+      function goToArticlesLineSent() {
+        switchTab("articles");
+        const select = document.getElementById("articleLineStatusFilter");
+        if (select) select.value = "sent";
+        fetchArticles(1);
       }
 
       function renderDashboardKpis(kpis, fetch24h) {
@@ -2016,24 +2091,28 @@
             value: formatNumber(kpis.total_articles),
             detail: `วันนี้ ${formatNumber(kpis.articles_today)} | 7 วัน ${formatNumber(kpis.articles_last_7_days)}`,
             tone: "primary",
+            onclick: "switchTab('articles')",
           },
           {
             label: "ส่ง LINE สำเร็จ",
             value: formatNumber(kpis.line_sent_total),
             detail: `Telegram ${formatNumber(kpis.telegram_sent_total)} | WP ${formatNumber(kpis.wordpress_success_total)}`,
             tone: "success",
+            onclick: "goToArticlesLineSent()",
           },
           {
             label: "Fetch 24 ชั่วโมง",
             value: formatNumber(kpis.total_fetches_24h),
             detail: `สำเร็จ ${formatNumber(fetch24h.success)} | บางส่วน ${formatNumber(fetch24h.partial)} | ล้มเหลว ${formatNumber(fetch24h.failed)}`,
             tone: "warning",
+            onclick: "switchTab('logs')",
           },
           {
             label: "Source ที่ควรตรวจ",
             value: formatNumber(kpis.sources_need_attention),
             detail: `Active ${formatNumber(kpis.active_sources)} จาก ${formatNumber(kpis.total_sources)} | Success 24h ${formatPercent(kpis.success_rate_24h)}`,
             tone: "danger",
+            onclick: "filterDashboardSourceHealthNeedsAttention()",
           },
         ];
 
@@ -2043,11 +2122,21 @@
           warning: "bg-warning-50 text-warning-800 border-warning-100",
           danger: "bg-danger-50 text-danger-700 border-danger-100",
         };
+        const toneAccents = {
+          primary: "hover:border-primary-300 focus:ring-primary-200",
+          success: "hover:border-success-300 focus:ring-success-200",
+          warning: "hover:border-warning-300 focus:ring-warning-200",
+          danger: "hover:border-danger-300 focus:ring-danger-200",
+        };
 
         container.innerHTML = kpiCards
           .map(
             (card) => `
-              <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+              <button
+                type="button"
+                onclick="${card.onclick}"
+                class="text-left w-full bg-white rounded-xl shadow-sm border border-gray-200 p-5 cursor-pointer transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-4 ${toneAccents[card.tone]}"
+              >
                 <div class="flex items-start justify-between gap-4">
                   <div>
                     <p class="text-sm font-medium text-gray-500">${escapeHtml(card.label)}</p>
@@ -2058,7 +2147,7 @@
                   </span>
                 </div>
                 <p class="text-xs text-gray-500 mt-4 leading-5">${escapeHtml(card.detail)}</p>
-              </div>
+              </button>
             `,
           )
           .join("");
@@ -2070,7 +2159,8 @@
 
         const methodCounts = rows.reduce((acc, source) => {
           const method =
-            source.fetch_method === "api" && source.api_variant === "generic_json"
+            source.fetch_method === "api" &&
+            source.api_variant === "generic_json"
               ? "Generic JSON API"
               : source.fetch_method === "api"
                 ? "WP API"
@@ -2231,16 +2321,19 @@
         );
         if (!tbody) return;
 
-        if (rows.length === 0) {
-          tbody.innerHTML =
-            '<tr><td colspan="7" class="px-4 py-12 text-center text-gray-500">ยังไม่มีข้อมูล source</td></tr>';
+        const filteredRows = dashboardSourceHealthFilter
+          ? rows.filter((source) => source.health_status !== "ok")
+          : rows;
+
+        if (filteredRows.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-12 text-center text-gray-500">${dashboardSourceHealthFilter ? "ไม่มี source ที่ควรตรวจในขณะนี้" : "ยังไม่มีข้อมูล source"}</td></tr>`;
           if (paginationContainer) {
             paginationContainer.classList.add("hidden");
           }
           return;
         }
 
-        const total = rows.length;
+        const total = filteredRows.length;
         const totalPages = Math.max(
           1,
           Math.ceil(total / DASHBOARD_SOURCE_HEALTH_PER_PAGE),
@@ -2248,7 +2341,7 @@
         const safePage = Math.min(Math.max(page, 1), totalPages);
         const start = (safePage - 1) * DASHBOARD_SOURCE_HEALTH_PER_PAGE;
         const end = start + DASHBOARD_SOURCE_HEALTH_PER_PAGE;
-        const paginatedRows = rows.slice(start, end);
+        const paginatedRows = filteredRows.slice(start, end);
 
         currentDashboardSourceHealthPage = safePage;
         dashboardSourceHealthPagination = {
@@ -2266,7 +2359,8 @@
               ? '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-success-100 text-success-700">Active</span>'
               : '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">Inactive</span>';
             const typeLabel =
-              source.fetch_method === "api" && source.api_variant === "generic_json"
+              source.fetch_method === "api" &&
+              source.api_variant === "generic_json"
                 ? "Generic JSON API"
                 : source.fetch_method === "api"
                   ? "WP API"
@@ -3569,7 +3663,8 @@
 
       function updateApiConfigVisibility() {
         const fetchMethod = document.getElementById("fetchMethod")?.value || "";
-        const apiVariant = document.getElementById("apiVariant")?.value || "wordpress";
+        const apiVariant =
+          document.getElementById("apiVariant")?.value || "wordpress";
         const apiConfigSection = document.getElementById("apiConfigSection");
         const genericJsonMappingSection = document.getElementById(
           "genericJsonMappingSection",
@@ -3580,7 +3675,11 @@
         const jsonLinkField = document.getElementById("jsonLinkField");
         const jsonDateField = document.getElementById("jsonDateField");
 
-        if (!apiConfigSection || !genericJsonMappingSection || !apiVariantHint) {
+        if (
+          !apiConfigSection ||
+          !genericJsonMappingSection ||
+          !apiVariantHint
+        ) {
           return;
         }
 
