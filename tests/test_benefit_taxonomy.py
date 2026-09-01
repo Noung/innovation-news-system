@@ -91,6 +91,27 @@ class BenefitSelectionTests(unittest.TestCase):
         self.assertTrue(all(benefit in FETCHER.BENEFIT_EMOJI_MAP for benefit in first))
 
 
+class LineWordPressUrlTests(unittest.TestCase):
+    def test_line_message_uses_wordpress_url_not_source_url(self):
+        message = line.format_line_message({
+            'title': 'Example innovation news',
+            'summary': 'Example summary',
+            'source': 'Example',
+            'link': 'https://source.example/original',
+            'wordpress_url': 'https://wordpress.example/innovation-tip/example',
+        })
+
+        self.assertIn('https://wordpress.example/innovation-tip/example', message)
+        self.assertNotIn('https://source.example/original', message)
+
+    def test_line_message_rejects_source_url_fallback(self):
+        with self.assertRaises(ValueError):
+            line.format_line_message({
+                'title': 'Example innovation news',
+                'link': 'https://source.example/original',
+            })
+
+
 class WordPressBenefitTaxonomyTests(unittest.TestCase):
     def setUp(self):
         wp._BENEFIT_TERM_ID_CACHE.clear()
@@ -212,7 +233,10 @@ class WordPressBenefitTaxonomyTests(unittest.TestCase):
         _mock_duplicate,
     ):
         mock_config.return_value = self.config
-        mock_post.return_value = FakeResponse(201, {'id': 501})
+        mock_post.return_value = FakeResponse(
+            201,
+            {'id': 501, 'link': 'https://wordpress.example/innovation-tip/501'},
+        )
         article = {
             'title': 'AI for university services',
             'summary': 'Summary',
@@ -226,10 +250,19 @@ class WordPressBenefitTaxonomyTests(unittest.TestCase):
 
         self.assertEqual('created', result['status'])
         self.assertEqual(501, result['post_id'])
+        self.assertEqual(
+            'https://wordpress.example/innovation-tip/501',
+            result['wordpress_url'],
+        )
         payload = mock_post.call_args.kwargs['json']
         self.assertEqual([31, 32, 33], payload['organization-benefits'])
         self.assertEqual(3, len(article['benefits']))
 
+    @patch.object(
+        wp,
+        'get_wordpress_post_url',
+        return_value='https://wordpress.example/innovation-tip/777',
+    )
     @patch.object(wp, 'update_wordpress_post_benefits', return_value=True)
     @patch.object(wp, 'check_duplicate_in_wordpress', return_value=777)
     @patch.object(wp, 'resolve_wordpress_benefit_term_ids', return_value=[41, 42, 43])
@@ -240,6 +273,7 @@ class WordPressBenefitTaxonomyTests(unittest.TestCase):
         _mock_resolve,
         _mock_duplicate,
         mock_update,
+        _mock_post_url,
     ):
         mock_config.return_value = self.config
         article = {'title': 'Existing article', 'benefits': []}
@@ -248,7 +282,29 @@ class WordPressBenefitTaxonomyTests(unittest.TestCase):
 
         self.assertEqual('duplicate', result['status'])
         self.assertTrue(result['taxonomy_updated'])
+        self.assertEqual(
+            'https://wordpress.example/innovation-tip/777',
+            result['wordpress_url'],
+        )
         mock_update.assert_called_once_with(777, [41, 42, 43], config=self.config)
+
+    def test_canonical_wordpress_url_requires_credential_free_https(self):
+        self.assertEqual(
+            'https://wordpress.example/innovation-tip/1',
+            wp.canonical_wordpress_url(
+                {'link': 'https://wordpress.example/innovation-tip/1'}
+            ),
+        )
+        self.assertIsNone(
+            wp.canonical_wordpress_url(
+                {'link': 'http://wordpress.example/innovation-tip/1'}
+            )
+        )
+        self.assertIsNone(
+            wp.canonical_wordpress_url(
+                {'link': 'https://user:password@wordpress.example/innovation-tip/1'}
+            )
+        )
 
     @patch.object(wp, 'resolve_wordpress_benefit_term_ids', return_value=None)
     @patch.object(wp, 'get_wp_config')

@@ -679,6 +679,7 @@ def update_article_delivery_statuses(
     telegram_status: str = 'skipped',
     wordpress_status: str = 'skipped',
     line_status: str = 'skipped',
+    wordpress_url: Optional[str] = None,
 ) -> bool:
     try:
         normalized_telegram = telegram_status if telegram_status in {'sent', 'failed', 'skipped', 'dry_run', 'not_configured', 'disabled'} else 'skipped'
@@ -690,6 +691,7 @@ def update_article_delivery_statuses(
             f"telegram_status = {sql_quote(normalized_telegram)}, "
             f"wordpress_status = {sql_quote(normalized_wordpress)}, "
             f"line_status = {sql_quote(normalized_line)}, "
+            f"wordpress_url = {sql_quote(wordpress_url) if wordpress_url else 'wordpress_url'}, "
             f"date_sent = {date_sent_sql}, "
             "updated_at = NOW() "
             f"WHERE id = {int(article_id)} LIMIT 1; "
@@ -698,6 +700,52 @@ def update_article_delivery_statuses(
         return bool(out and out.strip().splitlines()[-1].strip() not in {'', '0'})
     except Exception as e:
         log_message(f"  โ ๏ธ Failed to update article delivery status: {str(e)[:120]}")
+        return False
+
+BENEFIT_TERM_SLUGS = {
+    "ความสามารถในการแข่งขัน": "competitiveness",
+    "การลดต้นทุนและเพิ่มประสิทธิภาพ": "cost-efficiency",
+    "การปรับตัวสู่ดิจิทัลทรานส์ฟอร์เมชัน": "digital-transformation",
+    "การพัฒนาทักษะและการเรียนรู้": "skills-learning",
+    "การใช้งาน AI และเทคโนโลยีขั้นสูง": "ai-advanced-technology",
+    "ความปลอดภัยและความเป็นส่วนตัว": "security-privacy",
+    "การสร้างนวัตกรรมและการเปลี่ยนแปลง": "innovation-change",
+    "การปรับตัวต่อเทรนด์และตลาด": "trends-market-adaptation",
+    "การจัดการข้อมูลและวิเคราะห์ข้อมูล": "data-management-analytics",
+    "การสร้างประสบการณ์ลูกค้าและบริการ": "customer-experience-service",
+    "การเชื่อมต่อและการทำงานร่วมกัน": "connectivity-collaboration",
+    "การพัฒนาเทคโนโลยีและโครงสร้าง": "technology-infrastructure",
+    "การสนับสนุนนวัตกรรมและสตาร์ทอัพ": "innovation-startup-support",
+    "การประยุกต์บล็อกเชนและเทคโนโลยีทางการเงิน": "blockchain-fintech",
+    "การใช้เทคโนโลยีสีเขียวและยั่งยืน": "green-technology-sustainability",
+    "การพัฒนาสุขภาพและการดูแลโรงพยาบาล": "healthcare-hospital-care",
+    "การใช้ปัญญาประดิษฐ์แบบสร้างสรรค์": "generative-ai",
+    "การพัฒนาภาคศึกษาและเมืองอัจฉริยะ": "education-smart-city",
+    "การทำธุรกิจในยุคดิจิทัล": "digital-business",
+    "การวิจัยและพัฒนาองค์ความรู้": "research-knowledge-development",
+}
+
+def save_article_benefits_to_db(article_id: int, benefits: List[str]) -> bool:
+    selected_slugs = [
+        BENEFIT_TERM_SLUGS[benefit]
+        for benefit in benefits
+        if benefit in BENEFIT_TERM_SLUGS
+    ]
+    if len(selected_slugs) != BENEFITS_PER_ARTICLE:
+        return False
+    try:
+        values = ', '.join(
+            f"({int(article_id)}, {sql_quote(slug)})" for slug in selected_slugs
+        )
+        run_mysql_query(
+            "START TRANSACTION; "
+            f"DELETE FROM article_benefits WHERE article_id = {int(article_id)}; "
+            f"INSERT INTO article_benefits (article_id, benefit_slug) VALUES {values}; "
+            "COMMIT;"
+        )
+        return True
+    except Exception as e:
+        log_message(f"  Failed to save article benefits: {str(e)[:120]}")
         return False
 
 def is_article_duplicate(article: Dict, content_hash: Optional[str] = None) -> bool:
@@ -1288,9 +1336,12 @@ def sync_wordpress_and_line(article: Dict, content_hash: str, issues: Optional[L
             log_message("  Skipped LINE Notify because WordPress integration is disabled or not configured")
         return wp_result
 
-    if LINE_ENABLED and wp_result.get('created'):
+    wordpress_url = str(wp_result.get('wordpress_url') or '').strip()
+    if LINE_ENABLED and wp_result.get('created') and wordpress_url:
         log_message("  WordPress created a new post. Sending to LINE (OAR Notify)...")
-        if send_to_line(article):
+        line_article = dict(article)
+        line_article['wordpress_url'] = wordpress_url
+        if send_to_line(line_article):
             log_message("  Sent to LINE successfully")
             wp_result['line_status'] = 'sent'
         else:
@@ -1301,8 +1352,8 @@ def sync_wordpress_and_line(article: Dict, content_hash: str, issues: Optional[L
         wp_result['line_status'] = 'disabled' if not ENABLE_LINE else 'not_configured'
     else:
         wp_result['line_status'] = 'blocked_by_wordpress'
-        if wp_result.get('status') == 'failed':
-            log_message("  Skipped LINE Notify because WordPress sync failed")
+        if wp_result.get('status') == 'failed' or not wordpress_url:
+            log_message("  Skipped LINE Notify because no canonical WordPress URL is available")
 
     return wp_result
 
@@ -2800,6 +2851,8 @@ def process_articles_for_source(source_name: str, source_slug: str, articles: Li
             result['mysql_status'] = 'saved'
             article.update(build_published_date_payload(article_id, article.get('date', '')))
             article['benefits'] = generate_benefits(article.get('title', ''), article.get('summary', ''))
+            if ENABLE_EMAIL_WORKER and not save_article_benefits_to_db(article_id, article['benefits']):
+                result['issues'].append('Failed to save article benefits for email delivery')
 
             log_message("  Sending to Telegram...")
             telegram_sent = send_telegram_message(format_message(article))
@@ -2825,6 +2878,7 @@ def process_articles_for_source(source_name: str, source_slug: str, articles: Li
                 result['telegram_status'],
                 result['wordpress_status'],
                 result['line_status'],
+                wp_result.get('wordpress_url'),
             ):
                 result['issues'].append('Failed to update article delivery status')
             wp_id = None

@@ -198,6 +198,20 @@ class MockHandler(BaseHTTPRequestHandler):
             self.send_json(200, payload)
             return
 
+        if path.startswith("/wp-json/wp/v2/innovation-tip/"):
+            try:
+                post_id = int(path.rsplit("/", 1)[-1])
+            except ValueError:
+                self.send_json(400, {"error": "invalid_post_id"})
+                return
+            with STATE_LOCK:
+                post = next((item for item in POSTS if item["id"] == post_id), None)
+            if post is None:
+                self.send_json(404, {"error": "not_found"})
+                return
+            self.send_json(200, post)
+            return
+
         self.send_json(404, {"error": "not_found"})
 
     def do_POST(self) -> None:

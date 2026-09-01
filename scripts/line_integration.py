@@ -130,7 +130,9 @@ def format_line_message(article: Dict) -> str:
             benefits.append(fallback_benefit)
         if len(benefits) == 3:
             break
-    link = article.get('link', '')
+    link = str(article.get('wordpress_url', '') or '').strip()
+    if not link:
+        raise ValueError('LINE delivery requires a canonical WordPress URL')
     source = article.get('source', 'ไม่ระบุแหล่งข้อมูล')
 
     thai_date = resolve_display_date(article)
@@ -160,14 +162,18 @@ def format_line_message(article: Dict) -> str:
 
 def send_to_line(article: Dict, max_retries: int = 2) -> bool:
     """ส่งข้อมูลแบบ Raw UTF-8 Bytes เพื่อป้องกันปัญหาการเข้ารหัสตัวอักษรพิเศษ"""
+    try:
+        message_text = format_line_message(article)
+    except ValueError as exc:
+        log_message(f"  ⚠️ LINE send skipped: {str(exc)}")
+        return False
+
     config = get_line_config()
     
     if not is_line_configured():
         log_message("  ⚠️ LINE API Key not configured")
         return False
 
-    message_text = format_line_message(article)
-    
     payload = {
         "msg_detail": message_text
     }

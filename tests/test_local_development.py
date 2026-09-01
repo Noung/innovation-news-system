@@ -33,7 +33,7 @@ class LocalDevelopmentScaffoldTests(unittest.TestCase):
         self.assertEqual(values["DRY_RUN"], "1")
         self.assertEqual(values["ENABLE_SUBSCRIPTION_API"], "0")
         self.assertEqual(values["ENABLE_EMAIL_WORKER"], "0")
-        self.assertEqual(values["EMAIL_SEND_MODE"], "disabled")
+        self.assertEqual(values["EMAIL_SEND_MODE"], "json")
         self.assertEqual(values["DB_HOST"], "mysql")
         self.assertEqual(
             values["INNOVATION_NEWS_ENV_FILE"],
@@ -62,6 +62,12 @@ class LocalDevelopmentScaffoldTests(unittest.TestCase):
             "innovation_news",
             "fetch_logs",
             "admin_audit_logs",
+            "article_benefits",
+            "subscribers",
+            "subscriber_benefits",
+            "subscription_tokens",
+            "email_deliveries",
+            "email_delivery_attempts",
         )
         required_columns = (
             "api_variant",
@@ -71,6 +77,10 @@ class LocalDevelopmentScaffoldTests(unittest.TestCase):
             "wordpress_status",
             "line_status",
             "details_json",
+            "wordpress_url",
+            "email_normalized",
+            "benefit_slug",
+            "token_hash",
         )
         for table in required_tables:
             self.assertIn(f"CREATE TABLE {table}", schema)
@@ -114,6 +124,18 @@ class LocalDevelopmentScaffoldTests(unittest.TestCase):
         spec.loader.exec_module(module)
         self.assertEqual(len(module.BENEFIT_TERMS), 20)
         self.assertEqual(len({slug for _name, slug in module.BENEFIT_TERMS}), 20)
+
+    def test_php56_subscription_form_has_no_api_secret_or_storage(self):
+        form = self.read(
+            "wordpress-plugin/innovation-news-subscription-form/"
+            "innovation-news-subscription-form.php"
+        )
+        self.assertIn("Requires PHP: 5.6", form)
+        self.assertIn("add_shortcode('innovation_news_subscribe'", form)
+        self.assertIn("benefits[]", form)
+        self.assertIn("XMLHttpRequest", form)
+        self.assertNotIn("SMTP_PASSWORD", form)
+        self.assertNotIn("wp_insert_user", form)
 
 
 if __name__ == "__main__":

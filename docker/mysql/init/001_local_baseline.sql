@@ -47,6 +47,7 @@ CREATE TABLE innovation_news (
     telegram_status ENUM('sent', 'failed', 'skipped', 'dry_run', 'not_configured', 'disabled') NOT NULL DEFAULT 'skipped',
     wordpress_status ENUM('created', 'duplicate', 'failed', 'skipped', 'dry_run', 'not_configured', 'disabled') NOT NULL DEFAULT 'skipped',
     line_status ENUM('sent', 'failed', 'skipped', 'dry_run', 'blocked_by_wordpress', 'not_configured', 'disabled') NOT NULL DEFAULT 'skipped',
+    wordpress_url VARCHAR(1000) NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
@@ -98,6 +99,93 @@ CREATE TABLE admin_audit_logs (
     KEY idx_admin_audit_created (created_at),
     KEY idx_admin_audit_username (username),
     KEY idx_admin_audit_target (target_type, target_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE article_benefits (
+    article_id BIGINT UNSIGNED NOT NULL,
+    benefit_slug VARCHAR(64) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (article_id, benefit_slug),
+    KEY idx_article_benefits_slug_article (benefit_slug, article_id),
+    CONSTRAINT fk_article_benefits_article
+        FOREIGN KEY (article_id) REFERENCES innovation_news(id)
+        ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE subscribers (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    email_normalized VARCHAR(254) NOT NULL,
+    status ENUM('pending', 'active', 'unsubscribed') NOT NULL DEFAULT 'pending',
+    consented_at DATETIME NULL,
+    consent_version VARCHAR(32) NOT NULL,
+    confirmed_at DATETIME NULL,
+    unsubscribed_at DATETIME NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_subscribers_email_normalized (email_normalized),
+    KEY idx_subscribers_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE subscriber_benefits (
+    subscriber_id BIGINT UNSIGNED NOT NULL,
+    benefit_slug VARCHAR(64) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (subscriber_id, benefit_slug),
+    KEY idx_subscriber_benefits_slug_subscriber (benefit_slug, subscriber_id),
+    CONSTRAINT fk_subscriber_benefits_subscriber
+        FOREIGN KEY (subscriber_id) REFERENCES subscribers(id)
+        ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE subscription_tokens (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    subscriber_id BIGINT UNSIGNED NOT NULL,
+    token_type ENUM('confirm', 'unsubscribe') NOT NULL,
+    token_hash CHAR(64) NOT NULL,
+    expires_at DATETIME NOT NULL,
+    used_at DATETIME NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_subscription_tokens_hash (token_hash),
+    KEY idx_subscription_tokens_lookup (token_type, token_hash, expires_at),
+    CONSTRAINT fk_subscription_tokens_subscriber
+        FOREIGN KEY (subscriber_id) REFERENCES subscribers(id)
+        ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE email_deliveries (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    article_id BIGINT UNSIGNED NOT NULL,
+    subscriber_id BIGINT UNSIGNED NOT NULL,
+    status ENUM('pending', 'sent', 'failed') NOT NULL DEFAULT 'pending',
+    provider_message_id VARCHAR(255) NULL,
+    error_message VARCHAR(1000) NULL,
+    sent_at DATETIME NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_email_deliveries_article_subscriber (article_id, subscriber_id),
+    KEY idx_email_deliveries_status_created (status, created_at),
+    CONSTRAINT fk_email_deliveries_article
+        FOREIGN KEY (article_id) REFERENCES innovation_news(id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_email_deliveries_subscriber
+        FOREIGN KEY (subscriber_id) REFERENCES subscribers(id)
+        ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE email_delivery_attempts (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    email_delivery_id BIGINT UNSIGNED NOT NULL,
+    status ENUM('sent', 'failed') NOT NULL,
+    error_message VARCHAR(1000) NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    KEY idx_email_delivery_attempts_delivery (email_delivery_id, created_at),
+    CONSTRAINT fk_email_delivery_attempts_delivery
+        FOREIGN KEY (email_delivery_id) REFERENCES email_deliveries(id)
+        ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE OR REPLACE VIEW v_source_stats AS

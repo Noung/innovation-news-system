@@ -5,6 +5,10 @@
 SET NAMES utf8mb4;
 SET time_zone = '+07:00';
 
+ALTER TABLE innovation_news
+    ADD COLUMN IF NOT EXISTS wordpress_url VARCHAR(1000) NULL
+    AFTER line_status;
+
 UPDATE news_sources
 SET source_url = CONCAT('https://mock-integrations:8443/source/', slug),
     is_active = 0,

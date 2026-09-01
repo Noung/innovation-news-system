@@ -95,6 +95,54 @@ const allowedCorsOrigins = new Set(
         .map((origin) => origin.trim())
         .filter(Boolean)
 );
+const subscriptionApiEnabled = process.env.ENABLE_SUBSCRIPTION_API === '1';
+const subscriptionOrigins = new Set(
+    (process.env.SUBSCRIPTION_ALLOWED_ORIGINS || '')
+        .split(',')
+        .map((origin) => origin.trim())
+        .filter(Boolean)
+);
+const subscriptionTokenSecret = (process.env.SUBSCRIPTION_TOKEN_SECRET || '').trim();
+const subscriptionConfirmBaseUrl = (process.env.SUBSCRIPTION_CONFIRM_BASE_URL || '').trim();
+const SUBSCRIPTION_RATE_WINDOW_MS = readIntegerEnv(
+    'SUBSCRIPTION_RATE_WINDOW_MS', 3600000, 60000, 86400000
+);
+const SUBSCRIPTION_RATE_MAX_ATTEMPTS = readIntegerEnv(
+    'SUBSCRIPTION_RATE_MAX_ATTEMPTS', 5, 1, 50
+);
+const SUBSCRIPTION_TOKEN_TTL_SECONDS = readIntegerEnv(
+    'SUBSCRIPTION_TOKEN_TTL_SECONDS', 86400, 300, 604800
+);
+const SUBSCRIPTION_ATTEMPTS = new Map();
+const BENEFIT_SLUGS = new Set([
+    'competitiveness', 'cost-efficiency', 'digital-transformation',
+    'skills-learning', 'ai-advanced-technology', 'security-privacy',
+    'innovation-change', 'trends-market-adaptation',
+    'data-management-analytics', 'customer-experience-service',
+    'connectivity-collaboration', 'technology-infrastructure',
+    'innovation-startup-support', 'blockchain-fintech',
+    'green-technology-sustainability', 'healthcare-hospital-care',
+    'generative-ai', 'education-smart-city', 'digital-business',
+    'research-knowledge-development',
+]);
+if (subscriptionApiEnabled) {
+    if (subscriptionOrigins.size === 0) {
+        throw new Error('SUBSCRIPTION_ALLOWED_ORIGINS must list approved HTTPS WordPress origins');
+    }
+    for (const origin of subscriptionOrigins) {
+        const parsedOrigin = new URL(origin);
+        if (parsedOrigin.protocol !== 'https:' || parsedOrigin.origin !== origin) {
+            throw new Error('SUBSCRIPTION_ALLOWED_ORIGINS must contain HTTPS origins only');
+        }
+    }
+    if (subscriptionTokenSecret.length < 32 || looksLikePlaceholderSecret(subscriptionTokenSecret)) {
+        throw new Error('SUBSCRIPTION_TOKEN_SECRET must contain at least 32 non-placeholder characters');
+    }
+    const parsedConfirmUrl = new URL(subscriptionConfirmBaseUrl);
+    if (parsedConfirmUrl.protocol !== 'https:') {
+        throw new Error('SUBSCRIPTION_CONFIRM_BASE_URL must be an HTTPS URL');
+    }
+}
 const AUTH_COOKIE_NAME = 'innovation_news_admin_session';
 const ADMIN_USERNAME = (process.env.ADMIN_USERNAME || 'admin').trim();
 const ADMIN_PASSWORD = (process.env.ADMIN_PASSWORD || '').trim();
@@ -307,6 +355,7 @@ if (process.argv.includes('--config-check')) {
 const express = require('express');
 const mysql = require('mysql2/promise');
 const bodyParser = require('body-parser');
+const nodemailer = require('nodemailer');
 const app = express();
 app.set('trust proxy', trustProxy);
 
@@ -340,7 +389,10 @@ app.use((req, res, next) => {
         return res.status(403).json({ success: false, error: 'Origin not allowed' });
     }
 
-    if (!sameHost && !allowedCorsOrigins.has(origin)) {
+    const subscriptionOriginAllowed = (
+        req.path.startsWith('/api/subscriptions') && subscriptionOrigins.has(origin)
+    );
+    if (!sameHost && !allowedCorsOrigins.has(origin) && !subscriptionOriginAllowed) {
         return res.status(403).json({ success: false, error: 'Origin not allowed' });
     }
 
@@ -447,7 +499,11 @@ app.use((req, res, next) => {
         return next();
     }
 
-    if (req.path === '/api/health' || req.path === '/api/auth/login') {
+    if (
+        req.path === '/api/health'
+        || req.path === '/api/auth/login'
+        || req.path.startsWith('/api/subscriptions')
+    ) {
         return next();
     }
 
@@ -474,6 +530,233 @@ if (!isAuthConfigured()) {
 
 // Database pool
 const pool = mysql.createPool(dbConfig);
+
+function normalizeSubscriberEmail(value) {
+    const email = typeof value === 'string' ? value.trim().toLowerCase() : '';
+    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,253}$/.test(email) && email.length <= 254
+        ? email
+        : '';
+}
+
+function normalizeSubscriberBenefits(value) {
+    if (!Array.isArray(value) || value.length === 0 || value.length > BENEFIT_SLUGS.size) {
+        return null;
+    }
+    const benefits = [...new Set(value.map((benefit) =>
+        typeof benefit === 'string' ? benefit.trim().toLowerCase() : ''
+    ))];
+    return benefits.length > 0 && benefits.every((benefit) => BENEFIT_SLUGS.has(benefit))
+        ? benefits
+        : null;
+}
+
+function subscriptionOriginIsAllowed(req) {
+    const origin = req.get('Origin');
+    return Boolean(origin && subscriptionOrigins.has(origin));
+}
+
+function subscriptionRateLimit(req, email) {
+    const key = `${req.ip || req.socket?.remoteAddress || 'unknown'}:${crypto
+        .createHash('sha256').update(email).digest('hex')}`;
+    const now = Date.now();
+    const previous = SUBSCRIPTION_ATTEMPTS.get(key);
+    const attempt = !previous || previous.resetAt <= now
+        ? { count: 0, resetAt: now + SUBSCRIPTION_RATE_WINDOW_MS }
+        : previous;
+    if (attempt.count >= SUBSCRIPTION_RATE_MAX_ATTEMPTS) {
+        return false;
+    }
+    attempt.count += 1;
+    SUBSCRIPTION_ATTEMPTS.set(key, attempt);
+    return true;
+}
+
+function createSubscriptionToken() {
+    const token = crypto.randomBytes(32).toString('base64url');
+    return {
+        token,
+        hash: crypto.createHmac('sha256', subscriptionTokenSecret).update(token).digest('hex'),
+    };
+}
+
+function hashSubscriptionToken(token) {
+    return crypto.createHmac('sha256', subscriptionTokenSecret).update(token).digest('hex');
+}
+
+function createSubscriptionConfirmationUrl(token) {
+    const url = new URL('/api/subscriptions/confirm', subscriptionConfirmBaseUrl);
+    url.searchParams.set('token', token);
+    return url.toString();
+}
+
+function getSubscriptionTransport() {
+    const mode = (process.env.EMAIL_SEND_MODE || 'disabled').trim().toLowerCase();
+    if (mode === 'json') {
+        return nodemailer.createTransport({ jsonTransport: true });
+    }
+    if (mode === 'smtp') {
+        const host = (process.env.SMTP_HOST || '').trim();
+        const from = (process.env.EMAIL_FROM || '').trim();
+        if (!host || !from) {
+            throw new Error('SMTP_HOST and EMAIL_FROM are required for SMTP delivery');
+        }
+        const port = readIntegerEnv('SMTP_PORT', 587, 1, 65535);
+        const secure = process.env.SMTP_SECURE === '1';
+        const username = (process.env.SMTP_USERNAME || '').trim();
+        const password = (process.env.SMTP_PASSWORD || '').trim();
+        return nodemailer.createTransport({
+            host,
+            port,
+            secure,
+            auth: username || password ? { user: username, pass: password } : undefined,
+            requireTLS: !secure,
+        });
+    }
+    throw new Error('EMAIL_SEND_MODE must be json or smtp when subscriptions are enabled');
+}
+
+async function sendSubscriptionConfirmation(email, token) {
+    const transport = getSubscriptionTransport();
+    const from = (process.env.EMAIL_FROM || 'Innovation News <no-reply@localhost>').trim();
+    return transport.sendMail({
+        from,
+        to: email,
+        subject: 'Confirm your Innovation News subscription',
+        text: [
+            'Please confirm your subscription to Innovation News.',
+            '',
+            createSubscriptionConfirmationUrl(token),
+            '',
+            'If you did not request this subscription, you can ignore this email.',
+        ].join('\n'),
+    });
+}
+
+app.post('/api/subscriptions', async (req, res) => {
+    const genericResponse = {
+        success: true,
+        message: 'If this address can receive subscriptions, a confirmation email will be sent.',
+    };
+    if (!subscriptionApiEnabled) {
+        return res.status(404).json({ success: false, error: 'Not found' });
+    }
+    if (!subscriptionOriginIsAllowed(req)) {
+        return res.status(403).json({ success: false, error: 'Origin not allowed' });
+    }
+
+    const email = normalizeSubscriberEmail(req.body?.email);
+    const benefits = normalizeSubscriberBenefits(req.body?.benefits);
+    if (!email || !benefits || req.body?.consent !== true || !subscriptionRateLimit(req, email)) {
+        return res.status(202).json(genericResponse);
+    }
+
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+        const [existingRows] = await connection.execute(
+            'SELECT id, status FROM subscribers WHERE email_normalized = ? FOR UPDATE',
+            [email]
+        );
+        let subscriberId;
+        if (existingRows.length > 0) {
+            subscriberId = existingRows[0].id;
+            await connection.execute(
+                `UPDATE subscribers
+                 SET status = 'pending', consented_at = NOW(), consent_version = ?, confirmed_at = NULL
+                 WHERE id = ?`,
+                [String(req.body?.consent_version || 'v1').slice(0, 32), subscriberId]
+            );
+            await connection.execute('DELETE FROM subscriber_benefits WHERE subscriber_id = ?', [subscriberId]);
+        } else {
+            const [insertResult] = await connection.execute(
+                `INSERT INTO subscribers (email_normalized, status, consented_at, consent_version)
+                 VALUES (?, 'pending', NOW(), ?)`,
+                [email, String(req.body?.consent_version || 'v1').slice(0, 32)]
+            );
+            subscriberId = insertResult.insertId;
+        }
+        for (const benefit of benefits) {
+            await connection.execute(
+                'INSERT INTO subscriber_benefits (subscriber_id, benefit_slug) VALUES (?, ?)',
+                [subscriberId, benefit]
+            );
+        }
+        await connection.execute(
+            "UPDATE subscription_tokens SET used_at = NOW() WHERE subscriber_id = ? AND token_type = 'confirm' AND used_at IS NULL",
+            [subscriberId]
+        );
+        const token = createSubscriptionToken();
+        await connection.execute(
+            `INSERT INTO subscription_tokens (subscriber_id, token_type, token_hash, expires_at)
+             VALUES (?, 'confirm', ?, DATE_ADD(NOW(), INTERVAL ? SECOND))`,
+            [subscriberId, token.hash, SUBSCRIPTION_TOKEN_TTL_SECONDS]
+        );
+        await connection.commit();
+        try {
+            await sendSubscriptionConfirmation(email, token.token);
+        } catch (error) {
+            console.error('Subscription confirmation email failed:', redactSensitiveText(error.message));
+        }
+    } catch (error) {
+        await connection.rollback();
+        console.error('Subscription request failed:', redactSensitiveText(error.message));
+    } finally {
+        connection.release();
+    }
+    return res.status(202).json(genericResponse);
+});
+
+app.get('/api/subscriptions/confirm', async (req, res) => {
+    if (!subscriptionApiEnabled) {
+        return res.status(404).send('Not found');
+    }
+    const token = typeof req.query.token === 'string' ? req.query.token : '';
+    const tokenHash = hashSubscriptionToken(token);
+    try {
+        const [result] = await pool.execute(
+            `UPDATE subscribers s
+             INNER JOIN subscription_tokens t ON t.subscriber_id = s.id
+             SET s.status = 'active', s.confirmed_at = NOW(), t.used_at = NOW()
+             WHERE t.token_type = 'confirm' AND t.token_hash = ?
+               AND t.used_at IS NULL AND t.expires_at > NOW()`,
+            [tokenHash]
+        );
+        return res.status(result.affectedRows ? 200 : 400).type('text').send(
+            result.affectedRows
+                ? 'Your Innovation News subscription is confirmed.'
+                : 'This confirmation link is invalid or has expired.'
+        );
+    } catch (error) {
+        console.error('Subscription confirmation failed:', redactSensitiveText(error.message));
+        return res.status(500).type('text').send('Unable to confirm the subscription.');
+    }
+});
+
+app.get('/api/subscriptions/unsubscribe', async (req, res) => {
+    if (!subscriptionApiEnabled) {
+        return res.status(404).send('Not found');
+    }
+    const token = typeof req.query.token === 'string' ? req.query.token : '';
+    const tokenHash = hashSubscriptionToken(token);
+    try {
+        const [result] = await pool.execute(
+            `UPDATE subscribers s
+             INNER JOIN subscription_tokens t ON t.subscriber_id = s.id
+             SET s.status = 'unsubscribed', s.unsubscribed_at = NOW(), t.used_at = NOW()
+             WHERE t.token_type = 'unsubscribe' AND t.token_hash = ?
+               AND t.used_at IS NULL AND t.expires_at > NOW()`,
+            [tokenHash]
+        );
+        return res.status(result.affectedRows ? 200 : 400).type('text').send(
+            result.affectedRows
+                ? 'You have been unsubscribed from Innovation News.'
+                : 'This unsubscribe link is invalid or has expired.'
+        );
+    } catch (error) {
+        console.error('Subscription unsubscribe failed:', redactSensitiveText(error.message));
+        return res.status(500).type('text').send('Unable to unsubscribe.');
+    }
+});
 
 function sanitizeSourcePayload(body = {}) {
     const fetchMethod = typeof body.fetch_method === 'string' ? body.fetch_method.trim().toLowerCase() : '';

@@ -556,6 +556,29 @@ class SchedulerAndEnvironmentPolicyTests(unittest.TestCase):
         self.assertIn('res.json = (payload) => sendJson(sanitizeApiResponse(payload))', source)
         self.assertIn('function redactSensitiveText(rawValue)', source)
 
+    def test_subscription_api_is_feature_gated_and_origin_scoped(self):
+        source = (ROOT_DIR / 'fetch-innovation-news' / 'api' / 'server.js').read_text(
+            encoding='utf-8'
+        )
+        self.assertIn("const subscriptionApiEnabled = process.env.ENABLE_SUBSCRIPTION_API === '1';", source)
+        self.assertIn("req.path.startsWith('/api/subscriptions') && subscriptionOrigins.has(origin)", source)
+        self.assertIn("app.post('/api/subscriptions'", source)
+        self.assertIn("app.get('/api/subscriptions/confirm'", source)
+        self.assertIn("app.get('/api/subscriptions/unsubscribe'", source)
+        self.assertIn("crypto.createHmac('sha256', subscriptionTokenSecret)", source)
+        self.assertIn("const genericResponse =", source)
+
+    def test_email_worker_is_gated_and_uses_idempotent_delivery_records(self):
+        source = (
+            ROOT_DIR / 'fetch-innovation-news' / 'api' / 'email-worker.js'
+        ).read_text(encoding='utf-8')
+        self.assertIn("const enabled = process.env.ENABLE_EMAIL_WORKER === '1';", source)
+        self.assertIn("INSERT IGNORE INTO email_deliveries", source)
+        self.assertIn("INNER JOIN article_benefits", source)
+        self.assertIn("s.status = 'active'", source)
+        self.assertIn("n.wordpress_url IS NOT NULL", source)
+        self.assertIn("nodemailer.createTransport", source)
+
     def test_admin_assets_are_self_hosted_and_csp_blocks_external_scripts(self):
         html_source = (ROOT_DIR / 'fetch-innovation-news' / 'public' / 'index.html').read_text(
             encoding='utf-8'

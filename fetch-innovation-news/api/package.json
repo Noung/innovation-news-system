@@ -6,12 +6,14 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
+    "email:worker": "node email-worker.js",
     "build:css": "tailwindcss -c ../tailwind.config.js -i ../assets/admin.css -o ../public/admin.css --minify"
   },
   "dependencies": {
     "body-parser": "^1.20.6",
     "express": "^4.22.2",
-    "mysql2": "^3.6.5"
+    "mysql2": "^3.6.5",
+    "nodemailer": "^6.10.1"
   },
   "devDependencies": {
     "tailwindcss": "3.4.17"

@@ -328,6 +328,45 @@ def check_duplicate_in_wordpress(article_title: str, config=None) -> Optional[in
     return None
 
 
+def canonical_wordpress_url(post_payload: Dict) -> Optional[str]:
+    """Return a safe canonical public URL supplied by the WordPress REST API."""
+    raw_url = str(post_payload.get('link', '') or '').strip()
+    parsed_url = urlparse(raw_url)
+    if (
+        parsed_url.scheme.lower() != 'https'
+        or not parsed_url.hostname
+        or parsed_url.username
+        or parsed_url.password
+    ):
+        return None
+    return raw_url
+
+
+def get_wordpress_post_url(post_id: int, config=None) -> Optional[str]:
+    """Read the canonical URL of an existing published innovation-tip post."""
+    config = config or get_wp_config()
+    if not config.get('url') or not post_id:
+        return None
+
+    try:
+        response = requests.get(
+            f"{config['url']}/wp/v2/innovation-tip/{int(post_id)}",
+            auth=HTTPBasicAuth(config['user'], config['pwd']),
+            headers={'User-Agent': 'Innovation-News-Bot/1.0'},
+            timeout=10,
+            verify=config.get('verify_tls', True),
+        )
+        if response.status_code == 200:
+            return canonical_wordpress_url(_response_json(response) or {})
+        log_message(
+            f"  ❌ Cannot read canonical URL for WordPress post {post_id} "
+            f"(HTTP {response.status_code})"
+        )
+    except Exception as exc:
+        log_message(f"  ❌ Cannot read canonical URL for WordPress post {post_id}: {str(exc)}")
+    return None
+
+
 def update_wordpress_post_benefits(post_id: int, term_ids: List[int], config=None) -> bool:
     """Ensure an existing WordPress post has the three selected benefit terms."""
     config = config or get_wp_config()
@@ -389,11 +428,21 @@ def save_to_wordpress_result(article: Dict, content_hash: str = None, max_retrie
                 'benefit_term_ids': benefit_term_ids,
             }
 
+        wordpress_url = get_wordpress_post_url(existing_id, config=config)
+        if not wordpress_url:
+            return {
+                'post_id': existing_id,
+                'created': False,
+                'status': 'failed',
+                'benefits': benefits_list,
+                'benefit_term_ids': benefit_term_ids,
+            }
         log_message(f"  ℹ️ Article already exists; benefit taxonomy updated (ID: {existing_id})")
         return {
             'post_id': existing_id,
             'created': False,
             'status': 'duplicate',
+            'wordpress_url': wordpress_url,
             'taxonomy_updated': True,
             'benefits': benefits_list,
             'benefit_term_ids': benefit_term_ids,
@@ -454,12 +503,24 @@ def save_to_wordpress_result(article: Dict, content_hash: str = None, max_retrie
             )
 
             if response.status_code == 201:
-                post_id = response.json().get('id')
+                response_payload = _response_json(response) or {}
+                post_id = response_payload.get('id')
+                wordpress_url = canonical_wordpress_url(response_payload)
+                if not wordpress_url:
+                    log_message("  ❌ WordPress create response did not contain a valid canonical HTTPS URL")
+                    return {
+                        'post_id': post_id,
+                        'created': False,
+                        'status': 'failed',
+                        'benefits': benefits_list,
+                        'benefit_term_ids': benefit_term_ids,
+                    }
                 log_message(f"  ✅ Saved to WordPress (ID: {post_id})")
                 return {
                     'post_id': post_id,
                     'created': True,
                     'status': 'created',
+                    'wordpress_url': wordpress_url,
                     'benefits': benefits_list,
                     'benefit_term_ids': benefit_term_ids,
                 }
