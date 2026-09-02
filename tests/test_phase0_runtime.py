@@ -577,6 +577,7 @@ class SchedulerAndEnvironmentPolicyTests(unittest.TestCase):
         )
         self.assertIn("key not in os.environ", fetcher)
         self.assertIn("process.env[key] === undefined", server)
+        self.assertIn("ENABLE_EMAIL_WORKER = env_flag('ENABLE_EMAIL_WORKER', False)", fetcher)
 
     def test_email_worker_is_gated_and_uses_idempotent_delivery_records(self):
         source = (

@@ -107,6 +107,7 @@ def env_flag(name: str, default: bool = False) -> bool:
 ENABLE_TELEGRAM = env_flag('ENABLE_TELEGRAM', True)
 ENABLE_WORDPRESS = env_flag('ENABLE_WORDPRESS', True)
 ENABLE_LINE = env_flag('ENABLE_LINE', True)
+ENABLE_EMAIL_WORKER = env_flag('ENABLE_EMAIL_WORKER', False)
 
 # Add scripts directory to Python path for imports
 import sys
