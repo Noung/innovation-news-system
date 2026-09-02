@@ -19,7 +19,8 @@ COPY fetch-innovation-news/api/package.json fetch-innovation-news/api/package-lo
 RUN cd fetch-innovation-news/api && npm ci --omit=dev --ignore-scripts
 
 COPY . .
-RUN chmod 0755 docker/mock/openclaw-mock \
+RUN sed -i 's/\r$//' docker/mock/openclaw-mock \
+    && chmod 0755 docker/mock/openclaw-mock \
     && mkdir -p cache logs \
     && chown -R node:node /workspace
 
