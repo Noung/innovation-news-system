@@ -568,6 +568,16 @@ class SchedulerAndEnvironmentPolicyTests(unittest.TestCase):
         self.assertIn("crypto.createHmac('sha256', subscriptionTokenSecret)", source)
         self.assertIn("const genericResponse =", source)
 
+    def test_runtime_environment_overrides_dotenv_values(self):
+        fetcher = (SCRIPTS_DIR / 'fetch-innovation-news-mysql.py').read_text(
+            encoding='utf-8'
+        )
+        server = (ROOT_DIR / 'fetch-innovation-news' / 'api' / 'server.js').read_text(
+            encoding='utf-8'
+        )
+        self.assertIn("key not in os.environ", fetcher)
+        self.assertIn("process.env[key] === undefined", server)
+
     def test_email_worker_is_gated_and_uses_idempotent_delivery_records(self):
         source = (
             ROOT_DIR / 'fetch-innovation-news' / 'api' / 'email-worker.js'

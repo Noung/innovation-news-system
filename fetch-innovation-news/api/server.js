@@ -25,7 +25,7 @@ function loadEnvFile(filePath) {
             continue;
         }
         const value = valueParts.join('=').trim().replace(/^['"]|['"]$/g, '');
-        if (key !== 'INNOVATION_NEWS_ENV_FILE') {
+        if (key !== 'INNOVATION_NEWS_ENV_FILE' && process.env[key] === undefined) {
             process.env[key] = value;
         }
     }

@@ -56,7 +56,7 @@ def load_env_file(env_path: Path) -> bool:
                 if not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', key):
                     continue
                 value = value.strip().strip('"').strip("'").strip()
-                if key != 'INNOVATION_NEWS_ENV_FILE':
+                if key != 'INNOVATION_NEWS_ENV_FILE' and key not in os.environ:
                     os.environ[key] = value
     return True
 
