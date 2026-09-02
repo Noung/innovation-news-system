@@ -589,6 +589,8 @@ class SchedulerAndEnvironmentPolicyTests(unittest.TestCase):
         self.assertIn("s.status = 'active'", source)
         self.assertIn("n.wordpress_url IS NOT NULL", source)
         self.assertIn("nodemailer.createTransport", source)
+        self.assertIn('LIMIT ${batchSize}', source)
+        self.assertNotIn('LIMIT ?`', source)
 
     def test_admin_assets_are_self_hosted_and_csp_blocks_external_scripts(self):
         html_source = (ROOT_DIR / 'fetch-innovation-news' / 'public' / 'index.html').read_text(

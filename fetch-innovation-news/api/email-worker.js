@@ -89,8 +89,7 @@ async function main() {
            AND n.wordpress_url IS NOT NULL AND n.wordpress_url <> ''
            AND d.id IS NULL
          ORDER BY n.id ASC
-         LIMIT ?`,
-        [batchSize]
+           LIMIT ${batchSize}`
     );
 
     for (const candidate of candidates) {
