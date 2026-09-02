@@ -1,6 +1,7 @@
 # Normalize text files for Linux production while preserving binary assets.
 * text=auto
 *.sh text eol=lf
+docker/mock/openclaw-mock text eol=lf
 *.py text eol=lf
 *.js text eol=lf
 *.json text eol=lf
