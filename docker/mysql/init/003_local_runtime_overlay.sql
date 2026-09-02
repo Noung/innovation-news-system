@@ -5,9 +5,21 @@
 SET NAMES utf8mb4;
 SET time_zone = '+07:00';
 
-ALTER TABLE innovation_news
-    ADD COLUMN IF NOT EXISTS wordpress_url VARCHAR(1000) NULL
-    AFTER line_status;
+SET @wordpress_url_column_exists := (
+    SELECT COUNT(*)
+    FROM information_schema.columns
+    WHERE table_schema = DATABASE()
+      AND table_name = 'innovation_news'
+      AND column_name = 'wordpress_url'
+);
+SET @wordpress_url_column_sql := IF(
+    @wordpress_url_column_exists = 0,
+    'ALTER TABLE innovation_news ADD COLUMN wordpress_url VARCHAR(1000) NULL AFTER line_status',
+    'SELECT 1'
+);
+PREPARE add_wordpress_url_column FROM @wordpress_url_column_sql;
+EXECUTE add_wordpress_url_column;
+DEALLOCATE PREPARE add_wordpress_url_column;
 
 UPDATE news_sources
 SET source_url = CONCAT('https://mock-integrations:8443/source/', slug),

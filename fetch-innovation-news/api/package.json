@@ -12,8 +12,8 @@
   "dependencies": {
     "body-parser": "^1.20.6",
     "express": "^4.22.2",
-    "mysql2": "^3.6.5",
-    "nodemailer": "^6.10.1"
+    "mysql2": "^3.22.0",
+    "nodemailer": "^9.1.1"
   },
   "devDependencies": {
     "tailwindcss": "3.4.17"
