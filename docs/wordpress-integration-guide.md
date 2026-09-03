@@ -9,23 +9,26 @@ Integration นี้จะ sync บทความจากระบบ fetch-i
 ```
 fetch-innovation-news-mysql.py
     ↓
-1. Fetch articles from 10 sources
+1. Fetch articles from 16 sources
 2. Filter by keywords + date
 3. Check duplicate in MySQL
 4. Save to MySQL
-5. 🆕 Save to WordPress (innovation-tip CPT)
+5. Save to WordPress (innovation-tip CPT + benefit taxonomy)
 6. Send Telegram notification
+7. Send LINE notification
 ```
+
+**หมายเหตุ:** ปัจจุบันระบบรองรับ 16 แหล่งข้อมูล และส่ง notification ผ่านทั้ง Telegram และ LINE
 
 ## ไฟล์ที่ใช้
 
-| ไฟล์ | หน้าที่ |
-|------|----------|
-| `scripts/wordpress_integration.py` | Module สำหรับ WordPress API |
-| `scripts/fetch-innovation-news-mysql.py` | Script หลัก (updated แล้ว) |
-| `scripts/test-integrations.py` | Script ทดสอบ integrations และ WordPress taxonomy schema |
-| `wordpress-plugin/innovation-tip-benefit-taxonomy/` | Plugin สำหรับ taxonomy ประโยชน์ต่อองค์กร |
-| `.env` | Environment variables |
+| ไฟล์                                                | หน้าที่                                                 |
+| --------------------------------------------------- | ------------------------------------------------------- |
+| `scripts/wordpress_integration.py`                  | Module สำหรับ WordPress API                             |
+| `scripts/fetch-innovation-news-mysql.py`            | Script หลัก (updated แล้ว)                              |
+| `scripts/test-integrations.py`                      | Script ทดสอบ integrations และ WordPress taxonomy schema |
+| `wordpress-plugin/innovation-tip-benefit-taxonomy/` | Plugin สำหรับ taxonomy ประโยชน์ต่อองค์กร                |
+| `.env`                                              | Environment variables                                   |
 
 รายละเอียดการติดตั้ง taxonomy, การเลือก 3 terms และการทำหน้า archive/filter อยู่ใน [wordpress-benefit-taxonomy.md](wordpress-benefit-taxonomy.md)
 
@@ -117,6 +120,7 @@ WP_APP_PASSWORD=abcd 1234 efgh 5678
 ```
 
 **หมายเหตุ:**
+
 - `WP_API_URL`: ใช้ URL เต็มรวม `/wp-json`
 - `WP_USERNAME`: Username ของ WordPress (admin หรือ user ที่มีสิทธิ์ create posts)
 - `WP_APP_PASSWORD`: Application Password ที่ generate จาก Profile
@@ -159,41 +163,43 @@ Script จะทำงานตามปกติ และ sync ไป WordPres
 
 ## Field Mapping
 
-| Field จาก Article | Field ใน WordPress CPT | Type |
-|------------------|----------------------|------|
-| `title` | `post_title` | Post title |
-| `summary` | `innovation_tip_content` | Textarea |
-| `link` | `innovation_tip_url` | Link button |
-| `source` | `innovation_tip_source` | Text |
-| `source_url` | `innovation_tip_source_url` | Text |
-| `content_hash` | `innovation_tip_content_hash` | Text |
-| `sync_date` | `innovation_tip_sync_date` | Text |
+| Field จาก Article | Field ใน WordPress CPT        | Type        |
+| ----------------- | ----------------------------- | ----------- |
+| `title`           | `post_title`                  | Post title  |
+| `summary`         | `innovation_tip_content`      | Textarea    |
+| `link`            | `innovation_tip_url`          | Link button |
+| `source`          | `innovation_tip_source`       | Text        |
+| `source_url`      | `innovation_tip_source_url`   | Text        |
+| `content_hash`    | `innovation_tip_content_hash` | Text        |
+| `sync_date`       | `innovation_tip_sync_date`    | Text        |
 
 ## Source Mapping
 
-| Source Name | WordPress Value |
-|-------------|----------------|
-| NIA (สำนักงานนวัตกรรมแห่งชาติ) | NIA |
-| ETDA (สพธอ.) | ETDA |
-| Techsauce | Techsauce |
-| NSTDA (สวทช.) | NSTDA |
-| RYT9 | RYT9 |
-| iT24Hrs | iT24Hrs |
-| TechTalkThai | TechTalkThai |
-| NECTEC (สวทช.) | NECTEC |
-| NRIIS (สำนักงานการวิจัยแห่งชาติ) | NRIIS |
-| Innomatter | Innomatter |
+| Source Name                      | WordPress Value |
+| -------------------------------- | --------------- |
+| NIA (สำนักงานนวัตกรรมแห่งชาติ)   | NIA             |
+| ETDA (สพธอ.)                     | ETDA            |
+| Techsauce                        | Techsauce       |
+| NSTDA (สวทช.)                    | NSTDA           |
+| RYT9                             | RYT9            |
+| iT24Hrs                          | iT24Hrs         |
+| TechTalkThai                     | TechTalkThai    |
+| NECTEC (สวทช.)                   | NECTEC          |
+| NRIIS (สำนักงานการวิจัยแห่งชาติ) | NRIIS           |
+| Innomatter                       | Innomatter      |
 
 ## Troubleshooting
 
 ### ❌ WordPress connection failed
 
 **สาเหตุ:**
+
 - URL ผิด
 - WordPress site down
 - REST API disabled
 
 **วิธีแก้:**
+
 1. ตรวจสอบ URL ถูกต้องไหม
 2. Test REST API: `curl https://your-site.com/wp-json/wp/v2`
 3. ตรวจสอบ WordPress permalinks: Settings → Permalinks → Post name
@@ -201,10 +207,12 @@ Script จะทำงานตามปกติ และ sync ไป WordPres
 ### ❌ Authentication failed (401)
 
 **สาเหตุ:**
+
 - Username ผิด
 - Application Password ผิด/หมดอายุ
 
 **วิธีแก้:**
+
 1. ตรวจสอบ username ใน WordPress Admin
 2. Generate Application Password ใหม่
 3. Update `.env` และรัน test ใหม่
@@ -212,30 +220,36 @@ Script จะทำงานตามปกติ และ sync ไป WordPres
 ### ❌ Cannot save post (404/405)
 
 **สาเหตุ:**
+
 - CPT ไม่มี REST API enabled
 - Custom fields ไม่ถูก register
 
 **วิธีแก้:**
+
 1. ตรวจสอบ CPT registration: `show_in_rest => true`
 2. ตรวจสอบ custom fields ถูก register แล้ว
 
 ### ❌ Timeout errors
 
 **สาเหตุ:**
+
 - WordPress server ช้า
 - Network latency
 
 **วิธีแก้:**
+
 1. เพิ่ม timeout ใน `wordpress_integration.py`
 2. Check WordPress server performance
 
 ### ⚠️ Duplicate posts
 
 **สาเหตุ:**
+
 - Hash collision
 - WordPress database ไม่ sync
 
 **วิธีแก้:**
+
 1. ตรวจสอบ `innovation_tip_content_hash` field
 2. Delete duplicates จาก WordPress Admin
 

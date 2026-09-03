@@ -1,21 +1,30 @@
 # Stored Procedures - Setup Complete
 
-**Date:** 22 March 2026
+**Date:** 22 March 2026 (Updated: 3 September 2026)
 **Database:** `innovation_news`
 **User:** `kittisak`
 
-## ✅ Setup Status: Complete
+## ✅ Setup Status: Complete (Schema Evolved)
 
 **Procedures Created:** 10/10 ✅
+
+**หมายเหตุ:** เอกสารนี้แสดง stored procedures เริ่มต้น ปัจจุบันมี procedures เพิ่มเติมสำหรับ:
+
+- Admin audit logging
+- Article benefits management
+- Subscription management (subscribers, tokens, email deliveries)
+- ดู `sql/migrations/` สำหรับ schema ล่าสุด
 
 ---
 
 ## 📋 Stored Procedures
 
 ### 1. 📝 `save_article`
+
 **Purpose:** Save article to database (check duplicate first)
 
 **Parameters:**
+
 - `p_source_slug` (VARCHAR 100) - Source slug (e.g., 'nstda')
 - `p_title` (VARCHAR 500) - Article title
 - `p_summary` (TEXT) - Article summary
@@ -26,6 +35,7 @@
 - `OUT p_is_new` (BOOLEAN) - Returns true if new, false if updated
 
 **Usage:**
+
 ```sql
 CALL save_article(
   'nstda',
@@ -42,15 +52,18 @@ SELECT @article_id, @is_new;
 ```
 
 **Test Result:** ✅ Passed
+
 - Article ID: 1
 - Is New: 1
 
 ---
 
 ### 2. 📊 `log_fetch_operation`
+
 **Purpose:** Log fetch operation and update source stats
 
 **Parameters:**
+
 - `p_source_slug` (VARCHAR 100) - Source slug
 - `p_status` (ENUM) - 'success', 'partial', 'failed', 'error'
 - `p_articles_found` (INT) - Total articles found
@@ -60,6 +73,7 @@ SELECT @article_id, @is_new;
 - `p_duration_ms` (INT) - Fetch duration in milliseconds
 
 **Usage:**
+
 ```sql
 CALL log_fetch_operation(
   'nstda',
@@ -73,66 +87,80 @@ CALL log_fetch_operation(
 ```
 
 **Test Result:** ✅ Passed
+
 - Fetch log created
 - Source stats updated (fetch_count++, success_count++)
 
 ---
 
 ### 3. 📈 `get_source_statistics`
+
 **Purpose:** Get statistics for all sources (for dashboard)
 
 **Parameters:** None
 
 **Returns:**
+
 - Source info (id, name, slug, is_active)
 - Stats (fetch_count, success_count, error_count, success_rate)
 - Article count (total_articles)
 - Last article (last_article, days_since_last_article)
 
 **Usage:**
+
 ```sql
 CALL get_source_statistics();
 ```
 
 **Test Result:** ✅ Passed
+
 - Returns stats for all 10 sources
 - Success rate calculated correctly
 
 ---
 
 ### 4. 📅 `get_today_articles`
+
 **Purpose:** Get today's articles (for homepage/dashboard)
 
 **Parameters:**
+
 - `p_limit` (INT, optional) - Max articles to return (default: 20)
 
 **Returns:**
+
 - Article info (id, title, link, source, date_sent)
 - Summary preview (first 150 chars)
 
 **Usage:**
+
 ```sql
 CALL get_today_articles(10);
 ```
 
 **Test Result:** ✅ Passed
+
 - Returns today's articles
 - Limit works correctly
 
 ---
 
 ### 5. 🧹 `cleanup_old_articles`
+
 **Purpose:** Delete old articles and logs (maintenance task)
 
 **Parameters:**
+
 - `p_days_to_keep` (INT, optional) - Days to keep (default: 365)
 
 **Usage:**
+
 ```sql
 CALL cleanup_old_articles(180);
 ```
 
 **Test Result:** ✅ Passed
+
 - Deletes articles older than X days
 - Deletes logs older than 30 days
 - Returns count of deleted articles
@@ -140,13 +168,16 @@ CALL cleanup_old_articles(180);
 ---
 
 ### 6. 🔄 `update_source_status`
+
 **Purpose:** Enable or disable a source
 
 **Parameters:**
+
 - `p_slug` (VARCHAR 100) - Source slug
 - `p_is_active` (TINYINT) - 1 = enable, 0 = disable
 
 **Usage:**
+
 ```sql
 -- Disable NSTDA
 CALL update_source_status('nstda', 0);
@@ -156,30 +187,36 @@ CALL update_source_status('nstda', 1);
 ```
 
 **Test Result:** ✅ Passed
+
 - Disable: Works (is_active = 0)
 - Enable: Works (is_active = 1)
 
 ---
 
 ### 7. 📋 `get_articles_by_source`
+
 **Purpose:** Get articles from a specific source
 
 **Parameters:**
+
 - `p_slug` (VARCHAR 100) - Source slug
 - `p_days` (INT, optional) - Filter by days (default: all)
 - `p_limit` (INT, optional) - Max articles (default: 20)
 
 **Returns:**
+
 - Article info (id, title, link, date_published, date_sent)
 - Summary preview (first 200 chars)
 
 **Usage:**
+
 ```sql
 -- Get NSTDA articles from last 7 days
 CALL get_articles_by_source('nstda', 7, 10);
 ```
 
 **Test Result:** ✅ Passed
+
 - Returns articles from specific source
 - Date filter works
 - Limit works
@@ -187,11 +224,13 @@ CALL get_articles_by_source('nstda', 7, 10);
 ---
 
 ### 8. 📊 `get_dashboard_stats`
+
 **Purpose:** Get dashboard statistics (for admin panel)
 
 **Parameters:** None
 
 **Returns:**
+
 - Total articles
 - Today's articles
 - Active sources
@@ -199,57 +238,69 @@ CALL get_articles_by_source('nstda', 7, 10);
 - Success rate (24h)
 
 **Usage:**
+
 ```sql
 CALL get_dashboard_stats();
 ```
 
 **Test Result:** ✅ Passed
+
 - Returns all 5 metrics
 - Aggregations correct
 
 ---
 
 ### 9. 🔍 `search_articles`
+
 **Purpose:** Search articles by keyword
 
 **Parameters:**
+
 - `p_keyword` (VARCHAR 500) - Search keyword
 - `p_limit` (INT, optional) - Max results (default: 20)
 
 **Returns:**
+
 - Article info (id, title, link, source, date_sent)
 - Summary preview (first 200 chars)
 
 **Usage:**
+
 ```sql
 -- Search for 'AI'
 CALL search_articles('AI', 10);
 ```
 
 **Test Result:** ✅ Passed
+
 - Returns matching articles
 - Searches both title and summary
 
 ---
 
 ### 10. 📰 `get_recent_articles`
+
 **Purpose:** Get recent articles (within X days)
 
 **Parameters:**
+
 - `p_days` (INT, optional) - Days to look back (default: 7)
 - `p_limit` (INT, optional) - Max results (default: 20)
 
 **Returns:**
+
 - Article info (id, title, link, source, date_published, date_sent)
 - Summary preview (first 200 chars)
 
 **Usage:**
+
 ```sql
 -- Get articles from last 7 days
 CALL get_recent_articles(7, 10);
 ```
 
 **Test Result:** ✅ Passed
+
 - Returns recent articles
 - Date filter works
 - Limit works
@@ -258,18 +309,18 @@ CALL get_recent_articles(7, 10);
 
 ## 🧪 Test Results Summary
 
-| Procedure | Status | Notes |
-|-----------|--------|-------|
-| `save_article` | ✅ Passed | Insert & update logic working |
-| `log_fetch_operation` | ✅ Passed | Log + stats update working |
-| `get_source_statistics` | ✅ Passed | All sources stats correct |
-| `get_today_articles` | ✅ Passed | Returns today's articles |
-| `cleanup_old_articles` | ✅ Passed | Deletes old data correctly |
-| `update_source_status` | ✅ Passed | Enable/disable working |
-| `get_articles_by_source` | ✅ Passed | Source filter working |
-| `get_dashboard_stats` | ✅ Passed | All metrics correct |
-| `search_articles` | ✅ Passed | Search logic working |
-| `get_recent_articles` | ✅ Passed | Date filter working |
+| Procedure                | Status    | Notes                         |
+| ------------------------ | --------- | ----------------------------- |
+| `save_article`           | ✅ Passed | Insert & update logic working |
+| `log_fetch_operation`    | ✅ Passed | Log + stats update working    |
+| `get_source_statistics`  | ✅ Passed | All sources stats correct     |
+| `get_today_articles`     | ✅ Passed | Returns today's articles      |
+| `cleanup_old_articles`   | ✅ Passed | Deletes old data correctly    |
+| `update_source_status`   | ✅ Passed | Enable/disable working        |
+| `get_articles_by_source` | ✅ Passed | Source filter working         |
+| `get_dashboard_stats`    | ✅ Passed | All metrics correct           |
+| `search_articles`        | ✅ Passed | Search logic working          |
+| `get_recent_articles`    | ✅ Passed | Date filter working           |
 
 ---
 

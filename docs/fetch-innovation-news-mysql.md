@@ -1,50 +1,62 @@
 # Innovation News Fetcher (MySQL Version)
 
-**Version:** 2.0.0
+**Version:** 2.0.0 (Updated: 3 September 2026)
 **Database:** `innovation_news`
 **Python:** 3.6+
 **Created:** 2026-03-22
+
+**หมายเหตุ:** เอกสารนี้แสดงสถานะเดิมของ fetcher ปัจจุบันระบบรองรับ 16 แหล่งข้อมูล และมี Admin Dashboard สำหรับจัดการ sources แบบ dynamic
 
 ---
 
 ## 📋 รายละเอียด
 
-### แหล่งข่าวที่รองรับ (10 sources)
+### แหล่งข่าวที่รองรับ (16 sources - ปัจจุบัน)
 
-| # | Source | ประเภท | URL |
-|---|--------|-------|-----|
-| 1 | NIA (สำนักงานนวัตกรรมแห่งชาติ) | HTML | https://www.nia.or.th |
-| 2 | ETDA (สำนักงานพัฒนาธิการอิเล็กทรอนิกส์) | RSS | https://www.etda.or.th |
-| 3 | Techsauce | RSS | https://techsauce.com |
-| 4 | NSTDA (สำนักงานวิจัยการพัฒนาทางเทคโนโลยี) | HTML | https://www.nstda.or.th |
-| 5 | RYT9 | HTML | https://www.ryt9.com |
-| 6 | iT24Hrs | RSS | https://www.it24hrs.com |
-| 7 | TechTalkThai | RSS | https://www.techtalkthai.com |
-| 8 | NECTEC (สำนักงานวิทยาและเทคโนโลยี) | HTML | https://www.nectec.or.th |
-| 9 | TechMovement | HTML | https://techmovement.com |
-| 10 | Innomatter | RSS | https://www.innomatter.com |
+| #   | Source                                                      | ประเภท | URL                                   |
+| --- | ----------------------------------------------------------- | ------ | ------------------------------------- |
+| 1   | NIA (สำนักงานนวัตกรรมแห่งชาติ)                              | HTML   | https://www.nia.or.th                 |
+| 2   | ETDA (สำนักงานพัฒนาธุรกรรมทางอิเล็กทรอนิกส์)                | RSS    | https://www.etda.or.th                |
+| 3   | Techsauce                                                   | RSS    | https://techsauce.com                 |
+| 4   | NSTDA (สำนักงานพัฒนาวิทยาศาสตร์และเทคโนโลยีแห่งชาติ)        | API    | https://www.nstda.or.th               |
+| 5   | RYT9                                                        | RSS    | https://www.ryt9.com                  |
+| 6   | iT24Hrs                                                     | RSS    | https://www.it24hrs.com               |
+| 7   | TechTalkThai                                                | RSS    | https://www.techtalkthai.com          |
+| 8   | NECTEC (ศูนย์เทคโนโลยีอิเล็กทรอนิกส์และคอมพิวเตอร์แห่งชาติ) | HTML   | https://www.nectec.or.th              |
+| 9   | Tech Movement                                               | HTML   | https://techmovement.co.th            |
+| 10  | Innomatter                                                  | RSS    | https://www.innomatter.com            |
+| 11  | NRIIS (ระบบข้อมูลสารสนเทศวิจัยและนวัตกรรมแห่งชาติ)          | RSS    | https://nriis.go.th                   |
+| 12  | Innovation News Network                                     | API    | https://www.innovationnewsnetwork.com |
+| 13  | Tech Xplore                                                 | RSS    | https://techxplore.com                |
+| 14  | iMod                                                        | API    | https://www.iphonemod.net             |
+| 15  | Blognone                                                    | RSS    | https://www.blognone.com              |
+| 16  | OARKM (การจัดการความรู้ สำนักวิทยบริการ ม.อ.ปัตตานี)        | RSS    | https://oarkm.oas.psu.ac.th           |
 
 ---
 
 ## 🎯 คุณสมบัติ
 
 ### ✅ บันทึกลง Database
+
 - บันทึกบทความลง table `innovation_news`
 - ใช้ stored procedures `save_article` และ `log_fetch_operation`
 - Check duplicate ด้วย MD5 hash
 - บันทึกบันทึกบทความเดิม
 
 ### ✅ Tracking และ Statistics
+
 - บันทึก logs ทุกการ fetch ลง table `fetch_logs`
 - Update stats ของแต่ละ source (fetch_count, success_count, error_count)
 - Track เวลา last_fetched_at ของแต่ละ source
 
 ### ✅ ส่ง Telegram
+
 - ส่งบทความใหม่ผ่าน Telegram
 - ใช้ OpenClaw CLI สำหรับการส่ง
 - หมุนเวียน source ทุก 30 นาที
 
 ### ✅ Deduplication
+
 - ใช้ MD5 hash ของ title + link
 - Check duplicate ใน database
 - บันทึกบทความเดิม (update) ถ้ามีอยู่
@@ -54,6 +66,7 @@
 ## 📦 Requirements
 
 ### System
+
 - **Python:** 3.6+ (แนะนำ 3.8+)
 - **MySQL:** 5.7+ (แนะนำ 8.0+)
 - **OS:** Linux (Ubuntu/Debian recommended)
@@ -69,6 +82,7 @@ mysql-connector-python
 ```
 
 **ติดตั้ง:**
+
 ```bash
 pip3 install requests mysql-connector-python
 ```
@@ -78,11 +92,13 @@ pip3 install requests mysql-connector-python
 **ต้องมี database:** `innovation_news`
 
 **ต้องมี tables:**
+
 - `news_sources` (10 sources seeded)
 - `innovation_news` (บทความ)
 - `fetch_logs` (logs)
 
 **ต้องมี stored procedures:**
+
 - `save_article` - บันทึกบทความ
 - `log_fetch_operation` - บันทึก logs และ update stats
 
@@ -123,6 +139,7 @@ mysql -u kittisak -p*${DB_PASS}* < setup-innovation-db.sql
 ```
 
 **ผลลัพธ์:**
+
 ```
 ✅ Database setup complete!
 Database: innovation_news
@@ -147,6 +164,7 @@ export TELEGRAM_CHAT_ID="${TELEGRAM_CHAT_ID}"
 ```
 
 **หมายเหตุ:**
+
 - Script มี default values อยู่แล้ว
 - ปกติใช้ `TELEGRAM_CHAT_ID` เพียง
 - ระมัวเปลี่ยน token
@@ -164,6 +182,7 @@ python3 fetch-innovation-news-mysql.py
 ```
 
 **ผลลัพธ์:**
+
 ```
 === Starting innovation news fetch ===
 🔄 Fetching from source 1/10: NIA
@@ -181,6 +200,7 @@ crontab -e
 ```
 
 **เพิ่ม:**
+
 ```cron
 # Innovation News Fetcher
 # รันทุก 30 นาที (ทุกชั่วโมงที่ 00 และ 30)
@@ -188,6 +208,7 @@ crontab -e
 ```
 
 **บันทึก:**
+
 ```bash
 # บันทึก crontab
 crontab -l > /tmp/crontab-backup
@@ -199,48 +220,48 @@ crontab -l > /tmp/crontab-backup
 
 ### Table: news_sources
 
-| Column | Type | Description |
-|--------|------|-------------|
-| id | INT UNSIGNED PK | Primary Key |
-| name | VARCHAR(100) UNIQUE | Source name |
-| slug | VARCHAR(100) UNIQUE | Source slug |
-| source_url | VARCHAR(500) | Source URL |
-| fetch_method | ENUM | 'rss', 'html', 'api' |
-| is_active | TINYINT(1) | Active status (0/1) |
-| last_fetched_at | DATETIME | Last successful fetch |
-| fetch_count | INT UNSIGNED | Total fetch attempts |
-| success_count | INT UNSIGNED | Successful fetches |
-| error_count | INT UNSIGNED | Failed fetches |
+| Column          | Type                | Description           |
+| --------------- | ------------------- | --------------------- |
+| id              | INT UNSIGNED PK     | Primary Key           |
+| name            | VARCHAR(100) UNIQUE | Source name           |
+| slug            | VARCHAR(100) UNIQUE | Source slug           |
+| source_url      | VARCHAR(500)        | Source URL            |
+| fetch_method    | ENUM                | 'rss', 'html', 'api'  |
+| is_active       | TINYINT(1)          | Active status (0/1)   |
+| last_fetched_at | DATETIME            | Last successful fetch |
+| fetch_count     | INT UNSIGNED        | Total fetch attempts  |
+| success_count   | INT UNSIGNED        | Successful fetches    |
+| error_count     | INT UNSIGNED        | Failed fetches        |
 
 ### Table: innovation_news
 
-| Column | Type | Description |
-|--------|------|-------------|
-| id | INT UNSIGNED PK | Primary Key |
-| source_id | INT UNSIGNED FK | Reference to news_sources |
-| title | VARCHAR(500) | Article title |
-| summary | TEXT | Article summary (800 chars) |
-| link | VARCHAR(1000) UNIQUE | Article URL |
-| date_published | VARCHAR(100) | Original publish date |
-| date_sent | DATETIME | Sent to Telegram time |
-| content_hash | VARCHAR(32) | MD5 hash for deduplication |
-| is_sent | TINYINT(1) | Was article sent? |
-| created_at | DATETIME | Creation time |
-| updated_at | DATETIME | Update time |
+| Column         | Type                 | Description                 |
+| -------------- | -------------------- | --------------------------- |
+| id             | INT UNSIGNED PK      | Primary Key                 |
+| source_id      | INT UNSIGNED FK      | Reference to news_sources   |
+| title          | VARCHAR(500)         | Article title               |
+| summary        | TEXT                 | Article summary (800 chars) |
+| link           | VARCHAR(1000) UNIQUE | Article URL                 |
+| date_published | VARCHAR(100)         | Original publish date       |
+| date_sent      | DATETIME             | Sent to Telegram time       |
+| content_hash   | VARCHAR(32)          | MD5 hash for deduplication  |
+| is_sent        | TINYINT(1)           | Was article sent?           |
+| created_at     | DATETIME             | Creation time               |
+| updated_at     | DATETIME             | Update time                 |
 
 ### Table: fetch_logs
 
-| Column | Type | Description |
-|--------|------|-------------|
-| id | BIGINT UNSIGNED PK | Primary Key |
-| source_id | INT UNSIGNED FK | Reference to news_sources |
-| articles_found | INT UNSIGNED | Total articles found |
-| articles_sent | INT UNSIGNED | Articles sent to Telegram |
-| new_articles | INT UNSIGNED | New articles (not in DB) |
-| status | ENUM | 'success', 'partial', 'failed', 'error' |
-| error_message | TEXT | Error details |
-| duration_ms | INT UNSIGNED | Fetch duration in ms |
-| created_at | DATETIME | Log timestamp |
+| Column         | Type               | Description                             |
+| -------------- | ------------------ | --------------------------------------- |
+| id             | BIGINT UNSIGNED PK | Primary Key                             |
+| source_id      | INT UNSIGNED FK    | Reference to news_sources               |
+| articles_found | INT UNSIGNED       | Total articles found                    |
+| articles_sent  | INT UNSIGNED       | Articles sent to Telegram               |
+| new_articles   | INT UNSIGNED       | New articles (not in DB)                |
+| status         | ENUM               | 'success', 'partial', 'failed', 'error' |
+| error_message  | TEXT               | Error details                           |
+| duration_ms    | INT UNSIGNED       | Fetch duration in ms                    |
+| created_at     | DATETIME           | Log timestamp                           |
 
 ---
 
@@ -251,6 +272,7 @@ crontab -l > /tmp/crontab-backup
 บันทึกบทความลง database พร้อม check duplicate
 
 **Parameters:**
+
 - `p_source_slug` (VARCHAR 100) - Source slug (e.g., 'nstda')
 - `p_title` (VARCHAR 500) - Article title
 - `p_summary` (TEXT) - Article summary
@@ -259,10 +281,12 @@ crontab -l > /tmp/crontab-backup
 - `p_content_hash` (VARCHAR 32) - MD5 hash
 
 **Returns:**
+
 - `p_article_id` (INT) - Article ID
 - `p_is_new` (BOOLEAN) - True if new, False if updated
 
 **วิธีใช้:**
+
 ```sql
 CALL save_article(
   'nstda',
@@ -283,6 +307,7 @@ CALL save_article(
 บันทึก logs การ fetch และ update stats
 
 **Parameters:**
+
 - `p_source_slug` (VARCHAR 100) - Source slug
 - `p_status` (ENUM) - 'success', 'partial', 'failed', 'error'
 - `p_articles_found` (INT) - Total articles found
@@ -292,6 +317,7 @@ CALL save_article(
 - `p_duration_ms` (INT) - Fetch duration in ms
 
 **วิธีใช้:**
+
 ```sql
 CALL log_fetch_operation(
   'nstda',
@@ -392,6 +418,7 @@ SOURCES_INDEX_FILE = "/home/kittisak/.openclaw/workspace/cache/innovation-source
 **สาเหตุ:** ไม่ได้ติดตั้ง mysql-connector-python
 
 **วิธีแก้:**
+
 ```bash
 pip3 install mysql-connector-python
 ```
@@ -403,6 +430,7 @@ pip3 install mysql-connector-python
 **สาเหตุ:** Password ผิด หรือ user ไม่มี permission
 
 **วิธีแก้:**
+
 ```bash
 # Grant permissions
 mysql -u root -p
@@ -417,6 +445,7 @@ FLUSH PRIVILEGES;
 **สาเหตุ:** ไม่ได้รัน database setup script
 
 **วิธีแก้:**
+
 ```bash
 cd /home/kittisak/.openclaw/workspace/scripts
 mysql -u kittisak -p*${DB_PASS}* < setup-innovation-db.sql
@@ -429,6 +458,7 @@ mysql -u kittisak -p*${DB_PASS}* < setup-innovation-db.sql
 **สาเหตุ:** Keywords ไม่ match หรือ source เปลี่ยน pattern
 
 **วิธีแก้:**
+
 ```bash
 # ดู logs
 tail -50 /home/kittisak/.openclaw/workspace/logs/innovation-news-fetch.log
@@ -444,6 +474,7 @@ python3 fetch-innovation-news-mysql.py
 **สาเหตุ:** TELEGRAM_TOKEN ผิด หรือ OpenClaw CLI error
 
 **วิธีแก้:**
+
 ```bash
 # ทดสอบ OpenClaw CLI
 openclaw message send --channel telegram --target ${TELEGRAM_CHAT_ID} --message "Test message"
@@ -466,7 +497,7 @@ CALL cleanup_old_articles(180);
 
 # ดู stats
 mysql -u kittisak -p*${DB_PASS}* -D innovation_news -e "
-SELECT 
+SELECT
   'Total Articles' AS metric,
   COUNT(*) AS value
 FROM innovation_news;
@@ -496,8 +527,9 @@ OPTIMIZE TABLE fetch_logs;
 ### Query Examples
 
 **ดูบทความล่าสุด:**
+
 ```sql
-SELECT 
+SELECT
   n.title,
   n.link,
   s.name AS source,
@@ -511,8 +543,9 @@ LIMIT 10;
 ```
 
 **ดูตาม source:**
+
 ```sql
-SELECT 
+SELECT
   n.title,
   n.link,
   n.date_published,
@@ -525,8 +558,9 @@ LIMIT 10;
 ```
 
 **ค้นหา:**
+
 ```sql
-SELECT 
+SELECT
   n.title,
   n.link,
   n.date_published,
@@ -550,6 +584,7 @@ LIMIT 10;
 ## 🔄 Version History
 
 ### v2.0.0 (2026-03-22)
+
 - ✅ Add MySQL database integration
 - ✅ Use stored procedures for CRUD operations
 - ✅ Replace cache file with database deduplication
@@ -557,6 +592,7 @@ LIMIT 10;
 - ✅ Fix NSTDA pattern (HTML scraping)
 
 ### v1.0.0 (2026-03-20)
+
 - ✅ Initial version with 10 sources
 - ✅ Cache file-based deduplication
 - ✅ Telegram notifications

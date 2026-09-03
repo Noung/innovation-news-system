@@ -1,6 +1,10 @@
 # PROD Backup vs Local Comparison
 
-วันที่ตรวจ: 2026-08-28
+วันที่ตรวจ: 2026-08-28 (Updated: 3 September 2026)
+
+**หมายเหตุ:** เอกสารนี้เป็น point-in-time comparison เมื่อ 28 ส.ค. 2026 ปัจจุบัน local และ PROD อาจมีการเปลี่ยนแปลงเพิ่มเติม (Updated: 3 September 2026)
+
+**หมายเหตุ:** เอกสารนี้เป็น point-in-time comparison เมื่อ 28 ส.ค. 2026 ปัจจุบัน local และ PROD อาจมีการเปลี่ยนแปลงเพิ่มเติมแล้ว
 
 ## ขอบเขต
 
@@ -27,14 +31,14 @@ Local ไม่ใช่สำเนาของ PROD แบบ byte-for-byte �
 
 หลังตัด generated/runtime/secret files ออกจาก source comparison:
 
-| รายการ | จำนวน |
-|---|---:|
-| Local safe files | 103 |
-| PROD safe files | 72 |
-| เหมือนกันทุก byte | 16 |
-| path เดียวกันแต่เนื้อหาต่างกัน | 50 |
-| มีเฉพาะ Local | 37 |
-| มีเฉพาะ PROD | 6 |
+| รายการ                         | จำนวน |
+| ------------------------------ | ----: |
+| Local safe files               |   103 |
+| PROD safe files                |    72 |
+| เหมือนกันทุก byte              |    16 |
+| path เดียวกันแต่เนื้อหาต่างกัน |    50 |
+| มีเฉพาะ Local                  |    37 |
+| มีเฉพาะ PROD                   |     6 |
 
 ไฟล์ที่มีเฉพาะ PROD ทั้ง 6 ไฟล์เป็น backup copies สามคู่ และแต่ละคู่เหมือนกันแบบ byte-for-byte:
 
@@ -190,4 +194,3 @@ remote-tracking `origin/main` ไม่ตรงกัน:
 - Local เป็นฐานที่เหมาะสมกว่าสำหรับการรวม Phase 0 เพราะรักษา PROD functions และเพิ่ม safety controls
 - PROD backup มีข้อมูลใหม่ที่สำคัญด้าน runtime แต่มี security debt จึงต้องนำมาเป็น reference ไม่ใช่ source ที่คัดลอกกลับทั้งหมด
 - ขั้นต่อไปควรเป็น credential containment และ semantic reconciliation ไม่ใช่ cleanup แบบลบไฟล์ทันที
-
