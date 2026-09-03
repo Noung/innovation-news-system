@@ -8,6 +8,7 @@ p1_count: 2
 target_identity: "file:D:\\ข้อมูลหนึ่ง\\git\\innovation-news-system\\fetch-innovation-news\\public\\index.html#dashboardSection"
 timestamp: 2026-09-01T12-42-04Z
 slug: innovation-news-public-index-html-dashboardsection
+closed: true
 ---
 Method: dual-agent (A: design-review subagent · B: detector+browser subagent)
 
