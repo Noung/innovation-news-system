@@ -15,6 +15,11 @@ colors:
   ink-900: "#111827"
   ink-700: "#374151"
   ink-500: "#6b7280"
+  slate-500-inactive-tab: "#64748b"
+  ink-400: "#94a3b8"
+  slate-400-scrollbar: "#94a3b8"
+  slate-300-scrollbar: "#cbd5e1"
+  slate-100-scrollbar-track: "#f1f5f9"
   surface-bg: "#f9fafb"
   surface-border: "#e5e7eb"
   overlay-scrim: "rgba(2, 6, 23, 0.5)"
@@ -39,10 +44,15 @@ typography:
     fontSize: "0.75rem"
     fontWeight: 600
     letterSpacing: "0.2em"
+  micro:
+    fontFamily: "Noto Sans Thai, Tahoma, Arial, sans-serif"
+    fontSize: "0.6875rem"
+    fontWeight: 500
 rounded:
   sm: "8px"
   md: "12px"
   lg: "16px"
+  scrollbar-thumb: "4px"
   full: "9999px"
 spacing:
   xs: "8px"

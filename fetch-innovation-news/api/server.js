@@ -1548,12 +1548,27 @@ app.get('/api/audit-logs', async (req, res) => {
             [limit]
         );
 
+        const parsedRows = rows.map((row) => {
+            let details = null;
+            if (row.details_json) {
+                // mysql2 returns JSON columns as parsed objects; legacy rows may
+                // still hold plain strings, so accept both shapes.
+                if (typeof row.details_json === 'string') {
+                    try {
+                        details = JSON.parse(row.details_json);
+                    } catch {
+                        details = null;
+                    }
+                } else {
+                    details = row.details_json;
+                }
+            }
+            return { ...row, details };
+        });
+
         res.json({
             success: true,
-            data: rows.map((row) => ({
-                ...row,
-                details: row.details_json ? JSON.parse(row.details_json) : null,
-            })),
+            data: parsedRows,
         });
     } catch (error) {
         console.error('Error fetching audit logs:', error);
