@@ -8,8 +8,49 @@
 
 ระบบดึงข่าวจาก **16 แหล่งข้อมูล** (NIA, ETDA, Techsauce, NSTDA, RYT9, iT24Hrs, TechTalkThai, NECTEC, Tech Movement, Innomatter, NRIIS, Innovation News Network, Tech Xplore, iMod, Blognone, OARKM) กรองด้วย Innovation Keywords วิเคราะห์ประโยชน์ต่อองค์กร (20 terms) แล้วเผยแพร่ผ่าน WordPress, Telegram และ LINE
 
-```
-16 Sources → Python Fetcher → Filter → Benefit Analysis → MySQL → Telegram/WordPress/LINE
+```mermaid
+flowchart LR
+    subgraph sources["📰 16 News Sources"]
+        direction TB
+        S1[NIA] ~~~ S2[ETDA] ~~~ S3[Techsauce] ~~~ S4[NSTDA]
+        S5[RYT9] ~~~ S6[iT24Hrs] ~~~ S7[TechTalkThai] ~~~ S8[NECTEC]
+        S9[Tech Movement] ~~~ S10[Innomatter] ~~~ S11[NRIIS] ~~~ S12[INN]
+        S13[Tech Xplore] ~~~ S14[iMod] ~~~ S15[Blognone] ~~~ S16[OARKM]
+    end
+
+    subgraph fetcher["🐍 Python Fetcher"]
+        direction TB
+        F1[Round-robin ดึงข่าว] --> F2[RSS / HTML / API]
+    end
+
+    subgraph pipeline["⚙️ Processing Pipeline"]
+        direction TB
+        P1[กรอง Innovation Keywords] --> P2[ตรวจสอบ Duplicate]
+        P2 --> P3[วิเคราะห์ Benefit 20 terms]
+    end
+
+    subgraph storage["🗄️ MySQL"]
+        direction TB
+        DB1[(innovation_news)] ~~~ DB2[(news_sources)]
+        DB3[(fetch_logs)] ~~~ DB4[(article_benefits)]
+    end
+
+    subgraph notify["📢 Notifications"]
+        direction TB
+        N1[📱 Telegram Bot]
+        N2[🌐 WordPress CPT]
+        N3[💬 LINE Notify]
+    end
+
+    subgraph admin["🖥️ Admin Dashboard"]
+        direction TB
+        A1[Node.js + Express]
+        A2[จัดการ Sources / Articles / Logs]
+    end
+
+    sources --> fetcher --> pipeline --> storage
+    storage --> notify
+    storage --> admin
 ```
 
 | Metric | ค่า |
