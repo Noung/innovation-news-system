@@ -513,6 +513,7 @@
                 </div>
                 <button
                   onclick="fetchDashboard()"
+                  aria-label="รีเฟร็ชข้อมูลภาพรวมการให้บริการ"
                   class="btn-ripple inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-50 text-gray-600 border border-gray-200 rounded-lg font-medium text-sm hover:bg-gray-100 hover:border-gray-300 focus:ring-4 focus:ring-gray-200 focus:outline-none transition-all duration-300"
                 >
                   <svg
@@ -593,6 +594,7 @@
           <div
             id="dashboardKpis"
             class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6"
+            aria-live="polite"
           ></div>
 
           <div
@@ -672,31 +674,34 @@
                 <table class="w-full text-sm text-left min-w-[900px]">
                   <thead class="bg-gray-50 border-b border-gray-200">
                     <tr>
-                      <th class="px-4 py-3 font-semibold text-gray-700">
+                      <th scope="col" class="px-4 py-3 font-semibold text-gray-700">
                         แหล่งข่าว
                       </th>
-                      <th class="px-4 py-3 font-semibold text-gray-700">
+                      <th scope="col" class="px-4 py-3 font-semibold text-gray-700">
                         ประเภท
                       </th>
                       <th
+                        scope="col"
                         class="px-4 py-3 font-semibold text-gray-700 text-center"
                       >
                         สถานะ
                       </th>
                       <th
+                        scope="col"
                         class="px-4 py-3 font-semibold text-gray-700 text-center"
                       >
                         ข่าว 7 วัน
                       </th>
                       <th
+                        scope="col"
                         class="px-4 py-3 font-semibold text-gray-700 text-center"
                       >
                         Success 7 วัน
                       </th>
-                      <th class="px-4 py-3 font-semibold text-gray-700">
+                      <th scope="col" class="px-4 py-3 font-semibold text-gray-700">
                         Fetch ล่าสุด
                       </th>
-                      <th class="px-4 py-3 font-semibold text-gray-700">
+                      <th scope="col" class="px-4 py-3 font-semibold text-gray-700">
                         Health
                       </th>
                     </tr>
@@ -704,6 +709,7 @@
                   <tbody
                     id="dashboardSourceHealthBody"
                     class="divide-y divide-gray-200"
+                    aria-live="polite"
                   ></tbody>
                 </table>
               </div>
