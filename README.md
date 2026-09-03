@@ -4,6 +4,23 @@
 
 อ่าน [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) ก่อนเริ่มทำงานต่อ โดยเฉพาะเมื่อนำ repository ไปใช้ในเครื่องหรือ workspace ใหม่
 
+## ภาพรวมระบบ
+
+ระบบดึงข่าวจาก **16 แหล่งข้อมูล** (NIA, ETDA, Techsauce, NSTDA, RYT9, iT24Hrs, TechTalkThai, NECTEC, Tech Movement, Innomatter, NRIIS, Innovation News Network, Tech Xplore, iMod, Blognone, OARKM) กรองด้วย Innovation Keywords วิเคราะห์ประโยชน์ต่อองค์กร (20 terms) แล้วเผยแพร่ผ่าน WordPress, Telegram และ LINE
+
+```
+16 Sources → Python Fetcher → Filter → Benefit Analysis → MySQL → Telegram/WordPress/LINE
+```
+
+| Metric | ค่า |
+|--------|-----|
+| แหล่งข้อมูล | 16 |
+| บทความที่บันทึก | ~500+ |
+| WordPress posts | ~500+ |
+| Benefit terms | 20 |
+
+ดูรายละเอียดสถาปัตยกรรมและขั้นตอนการทำงานที่ [`docs/SYSTEM-OVERVIEW.md`](docs/SYSTEM-OVERVIEW.md)
+
 ## โครงสร้างหลัก
 
 - `scripts/` — Python fetcher, integrations, scheduler helpers และเครื่องมือ backfill
