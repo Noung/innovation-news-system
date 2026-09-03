@@ -50,7 +50,7 @@ npm ci --ignore-scripts
 npm run build:css
 ```
 
-runtime ใช้ `public/admin.css` ที่ self-host แล้ว ไม่เรียก Tailwind หรือ Google Fonts จาก CDN
+runtime ใช้ `public/admin.css` ที่ self-host แล้ว ไม่เรียก Tailwind จาก CDN — ฟอนต์ Noto Sans Thai ก็ self-host ภายใต้ `public/fonts/` (woff2, น้ำหนัก 400/500/600/700) พร้อม `@font-face` ใน `public/fonts.css` ทำให้หน้า Admin ทำงานได้โดยไม่ต้องต่ออินเทอร์เน็ต
 
 ## การรัน
 
