@@ -674,10 +674,16 @@
                 <table class="w-full text-sm text-left min-w-[900px]">
                   <thead class="bg-gray-50 border-b border-gray-200">
                     <tr>
-                      <th scope="col" class="px-4 py-3 font-semibold text-gray-700">
+                      <th
+                        scope="col"
+                        class="px-4 py-3 font-semibold text-gray-700"
+                      >
                         แหล่งข่าว
                       </th>
-                      <th scope="col" class="px-4 py-3 font-semibold text-gray-700">
+                      <th
+                        scope="col"
+                        class="px-4 py-3 font-semibold text-gray-700"
+                      >
                         ประเภท
                       </th>
                       <th
@@ -698,10 +704,16 @@
                       >
                         Success 7 วัน
                       </th>
-                      <th scope="col" class="px-4 py-3 font-semibold text-gray-700">
+                      <th
+                        scope="col"
+                        class="px-4 py-3 font-semibold text-gray-700"
+                      >
                         Fetch ล่าสุด
                       </th>
-                      <th scope="col" class="px-4 py-3 font-semibold text-gray-700">
+                      <th
+                        scope="col"
+                        class="px-4 py-3 font-semibold text-gray-700"
+                      >
                         Health
                       </th>
                     </tr>
@@ -2531,75 +2543,54 @@
         renderDashboardSourceHealth(rows, page);
       }
 
+      // Single source of truth for status badge colors (P3 distill) —
+      // prevents drift between dashboard health and alert badges.
+      const STATUS_BADGE_MAP = {
+        success: { bg: "bg-success-100", text: "text-success-700" },
+        warning: { bg: "bg-warning-100", text: "text-warning-800" },
+        danger: { bg: "bg-danger-100", text: "text-danger-700" },
+        amber: { bg: "bg-amber-100", text: "text-amber-700" },
+        sky: { bg: "bg-sky-100", text: "text-sky-700" },
+        gray: { bg: "bg-gray-100", text: "text-gray-600" },
+      };
+
+      function getFallbackStatusBadge(label) {
+        return {
+          bg: STATUS_BADGE_MAP.gray.bg,
+          text: "text-gray-700",
+          label: label || "-",
+        };
+      }
+
       function getDashboardHealthBadge(status) {
         const config = {
-          ok: {
-            bg: "bg-success-100",
-            text: "text-success-700",
-            label: "ปกติ",
-          },
-          warning: {
-            bg: "bg-warning-100",
-            text: "text-warning-800",
-            label: "ควรตรวจ",
-          },
-          error: {
-            bg: "bg-danger-100",
-            text: "text-danger-700",
-            label: "ผิดพลาด",
-          },
-          needs_test: {
-            bg: "bg-amber-100",
-            text: "text-amber-700",
-            label: "รอทดสอบ",
-          },
-          no_fetch_yet: {
-            bg: "bg-sky-100",
-            text: "text-sky-700",
-            label: "ยังไม่ fetch",
-          },
-          inactive: {
-            bg: "bg-gray-100",
-            text: "text-gray-600",
-            label: "Inactive",
-          },
+          ok: { style: "success", label: "ปกติ" },
+          warning: { style: "warning", label: "ควรตรวจ" },
+          error: { style: "danger", label: "ผิดพลาด" },
+          needs_test: { style: "amber", label: "รอทดสอบ" },
+          no_fetch_yet: { style: "sky", label: "ยังไม่ fetch" },
+          inactive: { style: "gray", label: "Inactive" },
         };
 
-        return (
-          config[status] || {
-            bg: "bg-gray-100",
-            text: "text-gray-700",
-            label: status || "-",
-          }
-        );
+        const entry = config[status];
+        if (!entry) {
+          return getFallbackStatusBadge(status);
+        }
+        return { ...STATUS_BADGE_MAP[entry.style], label: entry.label };
       }
 
       function getDashboardAlertBadge(severity) {
         const config = {
-          error: {
-            bg: "bg-danger-100",
-            text: "text-danger-700",
-            label: "เร่งด่วน",
-          },
-          warning: {
-            bg: "bg-warning-100",
-            text: "text-warning-800",
-            label: "ควรตรวจ",
-          },
-          info: {
-            bg: "bg-sky-100",
-            text: "text-sky-700",
-            label: "ข้อมูล",
-          },
+          error: { style: "danger", label: "เร่งด่วน" },
+          warning: { style: "warning", label: "ควรตรวจ" },
+          info: { style: "sky", label: "ข้อมูล" },
         };
 
-        return (
-          config[severity] || {
-            bg: "bg-gray-100",
-            text: "text-gray-700",
-            label: severity || "-",
-          }
-        );
+        const entry = config[severity];
+        if (!entry) {
+          return getFallbackStatusBadge(severity);
+        }
+        return { ...STATUS_BADGE_MAP[entry.style], label: entry.label };
       }
 
       function mapTrendRows(rows, valueKey) {
