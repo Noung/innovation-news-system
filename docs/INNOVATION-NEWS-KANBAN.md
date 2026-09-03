@@ -213,12 +213,15 @@ News Sources → Fetcher → Filter → MySQL → Telegram
 | Metric                  | ค่า    | เป้าหมาย Q4 |
 | ----------------------- | ------ | ----------- |
 | แหล่งข้อมูลที่เชื่อมต่อ | 16     | 20+         |
+| บทความที่บันทึก         | ~500+  | 2,000+      |
 | บทความที่บันทึก/วัน     | ~1-3   | ~5-10       |
 | Telegram Subscribers    | 1      | 10-50       |
 | LINE Subscribers        | 1      | 20-100      |
-| WordPress Posts         | 6,400+ | 10,000+     |
+| WordPress Posts         | ~500+  | 2,000+      |
 | Admin Dashboard Users   | 1      | 3-5         |
 | Email Subscribers       | 0      | 50-10       |
+
+*ข้อมูล ณ 28 ส.ค. 2026 จาก PROD snapshot*
 
 ## 📊 Metrics และ KPI
 

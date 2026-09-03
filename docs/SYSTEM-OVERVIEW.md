@@ -272,11 +272,13 @@ innovation-news-system/
 | Metric                  | ค่า    |
 | ----------------------- | ------ |
 | แหล่งข้อมูลที่เชื่อมต่อ | 16     |
-| บทความที่บันทึก         | 6,400+ |
-| WordPress posts         | 6,400+ |
+| บทความที่บันทึก         | ~500+  |
+| WordPress posts         | ~500+  |
 | Admin Dashboard users   | 1      |
 | Benefit terms           | 20     |
 | Stored procedures       | 10+    |
+
+*ข้อมูล ณ 28 ส.ค. 2026 จาก PROD snapshot (`local-data/prod-snapshot/`)*
 
 ---
 
