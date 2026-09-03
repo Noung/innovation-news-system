@@ -535,6 +535,62 @@
           </div>
 
           <div
+            id="dashboardErrorBanner"
+            class="hidden mb-6 rounded-xl border border-danger-200 bg-danger-50 px-5 py-4"
+            role="alert"
+          >
+            <div
+              class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+            >
+              <div class="flex items-start gap-3">
+                <svg
+                  class="w-5 h-5 text-danger-600 shrink-0 mt-0.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+                  ></path>
+                </svg>
+                <div>
+                  <p class="text-sm font-semibold text-danger-800">
+                    ไม่สามารถอัปเดตข้อมูลล่าสุดได้
+                  </p>
+                  <p
+                    id="dashboardErrorDetail"
+                    class="text-xs text-danger-700 mt-0.5"
+                  >
+                    ข้อมูลที่แสดงอาจไม่ใช่ข้อมูลล่าสุด ลองกด "รีเฟร็ช" อีกครั้ง
+                  </p>
+                </div>
+              </div>
+              <button
+                onclick="fetchDashboard()"
+                class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-danger-600 text-white rounded-lg font-medium text-sm hover:bg-danger-700 focus:ring-4 focus:ring-danger-200 focus:outline-none transition-all duration-300 whitespace-nowrap"
+              >
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 7m0 0C4.404 16.027 3.755 12.98 2.476m8.548 3.523A8.001 8.001 0 0019.424 7m0 0c0-3.547-2.548-7.022-6.025"
+                  ></path>
+                </svg>
+                <span>ลองอีกครั้ง</span>
+              </button>
+            </div>
+          </div>
+
+          <div
             id="dashboardKpis"
             class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6"
           ></div>
@@ -1638,6 +1694,14 @@
       let dashboardSourceHealthFilter = false;
       const ITEMS_PER_PAGE = 20;
       const DASHBOARD_SOURCE_HEALTH_PER_PAGE = 20;
+      const DASHBOARD_HEALTH_SORT_ORDER = {
+        error: 0,
+        warning: 1,
+        needs_test: 2,
+        no_fetch_yet: 3,
+        inactive: 4,
+        ok: 5,
+      };
       const AUTH_REQUIRED_ERROR = "AUTH_REQUIRED";
       let authUser = null;
       let manualFetchRunning = false;
@@ -2004,8 +2068,12 @@
           const result = await response.json();
           if (result.success) {
             dashboardOverview = result.data || {};
+            setDashboardErrorBanner(null);
             renderDashboard(dashboardOverview);
           } else {
+            setDashboardErrorBanner(
+              result.error || result.message || "Failed to load dashboard",
+            );
             showToast("Failed to load dashboard", "error");
           }
         } catch (error) {
@@ -2013,10 +2081,28 @@
             return;
           }
           console.error("Error:", error);
+          setDashboardErrorBanner("Cannot connect to the server");
           showToast("Cannot connect to the server", "error");
         } finally {
           hideLoading();
         }
+      }
+
+      function setDashboardErrorBanner(message) {
+        const banner = document.getElementById("dashboardErrorBanner");
+        if (!banner) return;
+        if (!message) {
+          banner.classList.add("hidden");
+          return;
+        }
+        const detail = document.getElementById("dashboardErrorDetail");
+        if (detail) {
+          detail.textContent =
+            message === "Cannot connect to the server"
+              ? 'เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ ข้อมูลที่แสดงอาจไม่ใช่ข้อมูลล่าสุด ลองกด "ลองอีกครั้ง"'
+              : `เกิดข้อผิดพลาด: ${message} — ข้อมูลที่แสดงอาจไม่ใช่ข้อมูลล่าสุด ลองกด "ลองอีกครั้ง"`;
+        }
+        banner.classList.remove("hidden");
       }
 
       function renderDashboard(data) {
@@ -2321,9 +2407,15 @@
         );
         if (!tbody) return;
 
+        const sortedRows = [...rows].sort(
+          (a, b) =>
+            (DASHBOARD_HEALTH_SORT_ORDER[a.health_status] ?? 99) -
+            (DASHBOARD_HEALTH_SORT_ORDER[b.health_status] ?? 99),
+        );
+
         const filteredRows = dashboardSourceHealthFilter
-          ? rows.filter((source) => source.health_status !== "ok")
-          : rows;
+          ? sortedRows.filter((source) => source.health_status !== "ok")
+          : sortedRows;
 
         if (filteredRows.length === 0) {
           tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-12 text-center text-gray-500">${dashboardSourceHealthFilter ? "ไม่มี source ที่ควรตรวจในขณะนี้" : "ยังไม่มีข้อมูล source"}</td></tr>`;
