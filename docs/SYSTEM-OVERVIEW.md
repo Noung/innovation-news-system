@@ -15,63 +15,61 @@
 
 ## 🏗️ สถาปัตยกรรม
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     16 News Sources                              │
-│  NIA, ETDA, Techsauce, NSTDA, RYT9, iT24Hrs, TechTalkThai,    │
-│  NECTEC, Tech Movement, Innomatter, NRIIS, Innovation News     │
-│  Network, Tech Xplore, iMod, Blognone, OARKM                   │
-└──────────────────────────┬──────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────────┐
-│              Python Fetcher (fetch-innovation-news-mysql.py)     │
-│                                                                  │
-│  1. ดึงข่าวแบบ Round-robin (ครั้งละ 1 source)                   │
-│  2. กรองด้วย Innovation Keywords (TH + EN)                      │
-│  3. ตรวจสอบ Duplicate (MD5 content hash)                        │
-│  4. วิเคราะห์ Benefit (3 จาก 20 terms)                          │
-│  5. บันทึกลง MySQL ผ่าน Stored Procedures                       │
-└──────────────────────────┬──────────────────────────────────────┘
-                           │
-              ┌────────────┼────────────┐
-              ▼            ▼            ▼
-┌──────────────┐ ┌──────────────┐ ┌──────────────┐
-│   Telegram   │ │  WordPress   │ │     LINE     │
-│  Bot Notify  │ │  REST API    │ │   Notify     │
-│              │ │  (CPT +      │ │  (OAR)       │
-│              │ │  Taxonomy)   │ │              │
-└──────────────┘ └──────────────┘ └──────────────┘
-                           │
-              ┌────────────┼────────────┐
-              ▼            ▼            ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    MySQL Database                                │
-│                                                                  │
-│  Tables:                                                         │
-│  - news_sources (16 sources)                                     │
-│  - innovation_news (articles)                                    │
-│  - fetch_logs (per-run logs)                                     │
-│  - admin_audit_logs (admin actions)                              │
-│  - article_benefits (benefit per article)                        │
-│  - subscribers, subscriber_benefits, subscription_tokens         │
-│  - email_deliveries (กำลังพัฒนา)                                 │
-│                                                                  │
-│  Views:                                                          │
-│  - v_source_stats, v_latest_articles, v_today_articles           │
-│  - v_recent_fetch_logs                                           │
-└─────────────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────────┐
-│              Admin Dashboard (Node.js + Express)                 │
-│                                                                  │
-│  - จัดการ Sources (เพิ่ม/ลบ/เปิด/ปิด/ทดสอบ)                     │
-│  - ดู Articles และ Logs                                          │
-│  - Manual Fetch (Run Now)                                        │
-│  - Audit Logs                                                    │
-│  - http://127.0.0.1:3001 (local)                                │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph sources["📰 16 News Sources"]
+        direction LR
+        S1[NIA] ~~~ S2[ETDA] ~~~ S3[Techsauce] ~~~ S4[NSTDA]
+        S5[RYT9] ~~~ S6[iT24Hrs] ~~~ S7[TechTalkThai] ~~~ S8[NECTEC]
+        S9[Tech Movement] ~~~ S10[Innomatter] ~~~ S11[NRIIS] ~~~ S12[INN]
+        S13[Tech Xplore] ~~~ S14[iMod] ~~~ S15[Blognone] ~~~ S16[OARKM]
+    end
+
+    subgraph fetcher["🐍 Python Fetcher (fetch-innovation-news-mysql.py)"]
+        direction TB
+        F1["1. ดึงข่าวแบบ Round-robin (ครั้งละ 1 source)"]
+        F2["2. กรองด้วย Innovation Keywords (TH + EN)"]
+        F3["3. ตรวจสอบ Duplicate (MD5 content hash)"]
+        F4["4. วิเคราะห์ Benefit (3 จาก 20 terms)"]
+        F5["5. บันทึกลง MySQL ผ่าน Stored Procedures"]
+        F1 --> F2 --> F3 --> F4 --> F5
+    end
+
+    subgraph storage["🗄️ MySQL Database"]
+        direction TB
+        subgraph tables["Tables"]
+            T1[(news_sources)] ~~~ T2[(innovation_news)]
+            T3[(fetch_logs)] ~~~ T4[(admin_audit_logs)]
+            T5[(article_benefits)] ~~~ T6[(subscribers)]
+            T7[(subscriber_benefits)] ~~~ T8[(subscription_tokens)]
+            T9[(email_deliveries)]
+        end
+        subgraph views["Views"]
+            V1[v_source_stats] ~~~ V2[v_latest_articles]
+            V3[v_today_articles] ~~~ V4[v_recent_fetch_logs]
+        end
+    end
+
+    subgraph notify["📢 Notifications"]
+        direction LR
+        N1["📱 Telegram Bot Notify"]
+        N2["🌐 WordPress REST API\n(CPT + Taxonomy)"]
+        N3["💬 LINE Notify\n(OAR)"]
+    end
+
+    subgraph admin["🖥️ Admin Dashboard (Node.js + Express)"]
+        direction TB
+        A1["จัดการ Sources (เพิ่ม/ลบ/เปิด/ปิด/ทดสอบ)"]
+        A2["ดู Articles และ Logs"]
+        A3["Manual Fetch (Run Now)"]
+        A4["Audit Logs"]
+        A5["http://127.0.0.1:3001 (local)"]
+    end
+
+    sources --> fetcher
+    fetcher --> storage
+    storage --> notify
+    storage --> admin
 ```
 
 ---
@@ -269,16 +267,16 @@ innovation-news-system/
 
 ## 📊 สถิติระบบ
 
-| Metric                  | ค่า    |
-| ----------------------- | ------ |
-| แหล่งข้อมูลที่เชื่อมต่อ | 16     |
-| บทความที่บันทึก         | ~500+  |
-| WordPress posts         | ~500+  |
-| Admin Dashboard users   | 1      |
-| Benefit terms           | 20     |
-| Stored procedures       | 10+    |
+| Metric                  | ค่า   |
+| ----------------------- | ----- |
+| แหล่งข้อมูลที่เชื่อมต่อ | 16    |
+| บทความที่บันทึก         | ~500+ |
+| WordPress posts         | ~500+ |
+| Admin Dashboard users   | 1     |
+| Benefit terms           | 20    |
+| Stored procedures       | 10+   |
 
-*ข้อมูล ณ 28 ส.ค. 2026 จาก PROD snapshot (`local-data/prod-snapshot/`)*
+_ข้อมูล ณ 28 ส.ค. 2026 จาก PROD snapshot (`local-data/prod-snapshot/`)_
 
 ---
 
