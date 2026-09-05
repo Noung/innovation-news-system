@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Innovation News Management System</title>
 
+    <!-- Self-hosted Noto Sans Thai (restores the pre-Docker Google Font without a CDN dependency). -->
+    <link rel="stylesheet" href="/fonts.css" />
     <!-- Compiled locally from the pinned Tailwind build dependency. -->
     <link rel="stylesheet" href="/admin.css" />
 
@@ -126,11 +128,11 @@
           <div class="flex justify-between items-center h-16">
             <div class="flex items-center gap-4">
               <div class="flex items-center gap-3">
-                <div
-                  class="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center shadow-lg shadow-primary-200"
-                >
-                  <span class="text-white text-xl font-bold">🤖</span>
-                </div>
+                <img
+                  src="/psu-logo.png"
+                  alt="ตราสัญลักษณ์มหาวิทยาลัยสงขลานครินทร์"
+                  class="h-10 w-auto"
+                />
                 <div>
                   <h1 class="text-lg font-bold text-gray-900">
                     <a
@@ -505,13 +507,16 @@
                   class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-600"
                 >
                   อัปเดต Dashboard:
-                  <span id="dashboardGeneratedAt" class="font-semibold text-gray-900"
+                  <span
+                    id="dashboardGeneratedAt"
+                    class="font-semibold text-gray-900"
                     >-</span
                   >
                 </div>
                 <button
                   onclick="fetchDashboard()"
-                  class="btn-ripple inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-50 text-gray-600 border border-gray-200 rounded-lg font-medium text-sm hover:bg-gray-100 hover:border-gray-300 focus:ring-4 focus:ring-gray-200 focus:outline-none transition-all duration-300"
+                  aria-label="รีเฟร็ชข้อมูลภาพรวมการให้บริการ"
+                  class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-50 text-gray-600 border border-gray-200 rounded-lg font-medium text-sm hover:bg-gray-100 hover:border-gray-300 focus:ring-4 focus:ring-gray-200 focus:outline-none transition-all duration-300"
                 >
                   <svg
                     class="w-4 h-4"
@@ -523,7 +528,7 @@
                       stroke-linecap="round"
                       stroke-linejoin="round"
                       stroke-width="2"
-                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 7m0 0C4.404 16.027 3.755 12.98 2.476m8.548 3.523A8.001 8.001 0 0019.424 7m0 0c0-3.547-2.548-7.022-6.025"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 7m0 0C4.404 16.027 3.755 12.98 2.476 12.5m8.548 3.523A8.001 8.001 0 0019.424 7m0 0c0-3.547-2.548-7.022-6.025-6.99"
                     ></path>
                   </svg>
                   <span>รีเฟร็ช</span>
@@ -533,8 +538,65 @@
           </div>
 
           <div
+            id="dashboardErrorBanner"
+            class="hidden mb-6 rounded-xl border border-danger-200 bg-danger-50 px-5 py-4"
+            role="alert"
+          >
+            <div
+              class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+            >
+              <div class="flex items-start gap-3">
+                <svg
+                  class="w-5 h-5 text-danger-600 shrink-0 mt-0.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+                  ></path>
+                </svg>
+                <div>
+                  <p class="text-sm font-semibold text-danger-800">
+                    ไม่สามารถอัปเดตข้อมูลล่าสุดได้
+                  </p>
+                  <p
+                    id="dashboardErrorDetail"
+                    class="text-xs text-danger-700 mt-0.5"
+                  >
+                    ข้อมูลที่แสดงอาจไม่ใช่ข้อมูลล่าสุด ลองกด "รีเฟร็ช" อีกครั้ง
+                  </p>
+                </div>
+              </div>
+              <button
+                onclick="fetchDashboard()"
+                class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-danger-600 text-white rounded-lg font-medium text-sm hover:bg-danger-700 focus:ring-4 focus:ring-danger-200 focus:outline-none transition-all duration-300 whitespace-nowrap"
+              >
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 7m0 0C4.404 16.027 3.755 12.98 2.476 12.5m8.548 3.523A8.001 8.001 0 0019.424 7m0 0c0-3.547-2.548-7.022-6.025-6.99"
+                  ></path>
+                </svg>
+                <span>ลองอีกครั้ง</span>
+              </button>
+            </div>
+          </div>
+
+          <div
             id="dashboardKpis"
             class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6"
+            aria-live="polite"
           ></div>
 
           <div
@@ -573,6 +635,7 @@
 
           <div class="mb-6">
             <div
+              id="dashboardSourceHealthCard"
               class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
             >
               <div
@@ -590,29 +653,69 @@
                   >-</span
                 >
               </div>
+              <div
+                id="dashboardSourceHealthFilterChip"
+                class="hidden px-5 py-3 border-b border-gray-200 bg-primary-50"
+              >
+                <div class="flex items-center justify-between gap-3">
+                  <span
+                    class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-primary-100 text-primary-700"
+                  >
+                    กำลังกรอง: เฉพาะ source ที่ควรตรวจ
+                  </span>
+                  <button
+                    type="button"
+                    onclick="clearDashboardSourceHealthFilter()"
+                    class="rounded-lg px-2 py-1 text-xs font-semibold text-primary-600 hover:text-primary-700 focus:outline-none focus:ring-4 focus:ring-primary-200"
+                  >
+                    ล้างตัวกรอง ✕
+                  </button>
+                </div>
+              </div>
               <div class="overflow-x-auto custom-scrollbar">
                 <table class="w-full text-sm text-left min-w-[900px]">
                   <thead class="bg-gray-50 border-b border-gray-200">
                     <tr>
-                      <th class="px-4 py-3 font-semibold text-gray-700">
+                      <th
+                        scope="col"
+                        class="px-4 py-3 font-semibold text-gray-700"
+                      >
                         แหล่งข่าว
                       </th>
-                      <th class="px-4 py-3 font-semibold text-gray-700">
+                      <th
+                        scope="col"
+                        class="px-4 py-3 font-semibold text-gray-700"
+                      >
                         ประเภท
                       </th>
-                      <th class="px-4 py-3 font-semibold text-gray-700 text-center">
+                      <th
+                        scope="col"
+                        class="px-4 py-3 font-semibold text-gray-700 text-center"
+                      >
                         สถานะ
                       </th>
-                      <th class="px-4 py-3 font-semibold text-gray-700 text-center">
+                      <th
+                        scope="col"
+                        class="px-4 py-3 font-semibold text-gray-700 text-center"
+                      >
                         ข่าว 7 วัน
                       </th>
-                      <th class="px-4 py-3 font-semibold text-gray-700 text-center">
+                      <th
+                        scope="col"
+                        class="px-4 py-3 font-semibold text-gray-700 text-center"
+                      >
                         Success 7 วัน
                       </th>
-                      <th class="px-4 py-3 font-semibold text-gray-700">
+                      <th
+                        scope="col"
+                        class="px-4 py-3 font-semibold text-gray-700"
+                      >
                         Fetch ล่าสุด
                       </th>
-                      <th class="px-4 py-3 font-semibold text-gray-700">
+                      <th
+                        scope="col"
+                        class="px-4 py-3 font-semibold text-gray-700"
+                      >
                         Health
                       </th>
                     </tr>
@@ -620,6 +723,7 @@
                   <tbody
                     id="dashboardSourceHealthBody"
                     class="divide-y divide-gray-200"
+                    aria-live="polite"
                   ></tbody>
                 </table>
               </div>
@@ -676,7 +780,7 @@
               <div class="flex gap-2">
                 <button
                   onclick="showAddModal()"
-                  class="btn-ripple btn-shimmer inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-success-50 text-success-600 border border-success-200 rounded-lg font-medium text-sm hover:bg-success-100 hover:border-success-300 focus:ring-4 focus:ring-success-200 focus:outline-none transition-all duration-300"
+                  class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-success-50 text-success-600 border border-success-200 rounded-lg font-medium text-sm hover:bg-success-100 hover:border-success-300 focus:ring-4 focus:ring-success-200 focus:outline-none transition-all duration-300"
                 >
                   <svg
                     class="w-4 h-4"
@@ -695,7 +799,7 @@
                 </button>
                 <button
                   onclick="fetchData()"
-                  class="btn-ripple inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-50 text-gray-600 border border-gray-200 rounded-lg font-medium text-sm hover:bg-gray-100 hover:border-gray-300 focus:ring-4 focus:ring-gray-200 focus:outline-none transition-all duration-300"
+                  class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-50 text-gray-600 border border-gray-200 rounded-lg font-medium text-sm hover:bg-gray-100 hover:border-gray-300 focus:ring-4 focus:ring-gray-200 focus:outline-none transition-all duration-300"
                 >
                   <svg
                     class="w-4 h-4"
@@ -707,7 +811,7 @@
                       stroke-linecap="round"
                       stroke-linejoin="round"
                       stroke-width="2"
-                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 7m0 0C4.404 16.027 3.755 12.98 2.476m8.548 3.523A8.001 8.001 0 0019.424 7m0 0c0-3.547-2.548-7.022-6.025-6.025"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 7m0 0C4.404 16.027 3.755 12.98 2.476 12.5m8.548 3.523A8.001 8.001 0 0019.424 7m0 0c0-3.547-2.548-7.022-6.025-6.99"
                     ></path>
                   </svg>
                   <span>รีเฟร็ช</span>
@@ -787,7 +891,7 @@
                 </select>
                 <button
                   onclick="resetFilters()"
-                  class="btn-ripple inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-50 text-gray-600 border border-gray-200 rounded-lg font-medium text-sm hover:bg-gray-100 hover:border-gray-300 focus:ring-4 focus:ring-gray-200 focus:outline-none transition-all duration-300"
+                  class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-50 text-gray-600 border border-gray-200 rounded-lg font-medium text-sm hover:bg-gray-100 hover:border-gray-300 focus:ring-4 focus:ring-gray-200 focus:outline-none transition-all duration-300"
                 >
                   <svg
                     class="w-4 h-4"
@@ -799,7 +903,7 @@
                       stroke-linecap="round"
                       stroke-linejoin="round"
                       stroke-width="2"
-                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 7m0 0C4.404 16.027 3.755 12.98 2.476m8.548 3.523A8.001 8.001 0 0019.424 7m0 0c0-3.547-2.548-7.022-6.025-6.025"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 7m0 0C4.404 16.027 3.755 12.98 2.476 12.5m8.548 3.523A8.001 8.001 0 0019.424 7m0 0c0-3.547-2.548-7.022-6.025-6.99"
                     ></path>
                   </svg>
                   <span>รีเฟร็ช</span>
@@ -897,7 +1001,7 @@
                   id="manualFetchBtn"
                   type="button"
                   onclick="runManualFetch()"
-                  class="btn-ripple btn-shimmer inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-primary-50 text-primary-600 border border-primary-200 rounded-lg font-medium text-sm hover:bg-primary-100 hover:border-primary-300 focus:ring-4 focus:ring-primary-200 focus:outline-none transition-all duration-300"
+                  class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-primary-50 text-primary-600 border border-primary-200 rounded-lg font-medium text-sm hover:bg-primary-100 hover:border-primary-300 focus:ring-4 focus:ring-primary-200 focus:outline-none transition-all duration-300"
                 >
                   <svg
                     class="w-4 h-4"
@@ -916,7 +1020,7 @@
                 </button>
                 <button
                   onclick="resetLogsView()"
-                  class="btn-ripple inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-50 text-gray-600 border border-gray-200 rounded-lg font-medium text-sm hover:bg-gray-100 hover:border-gray-300 focus:ring-4 focus:ring-gray-200 focus:outline-none transition-all duration-300"
+                  class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-50 text-gray-600 border border-gray-200 rounded-lg font-medium text-sm hover:bg-gray-100 hover:border-gray-300 focus:ring-4 focus:ring-gray-200 focus:outline-none transition-all duration-300"
                 >
                   <svg
                     class="w-4 h-4"
@@ -928,7 +1032,7 @@
                       stroke-linecap="round"
                       stroke-linejoin="round"
                       stroke-width="2"
-                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 7m0 0C4.404 16.027 3.755 12.98 2.476m8.548 3.523A8.001 8.001 0 0019.424 7m0 0c0-3.547-2.548-7.022-6.025-6.025"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 7m0 0C4.404 16.027 3.755 12.98 2.476 12.5m8.548 3.523A8.001 8.001 0 0019.424 7m0 0c0-3.547-2.548-7.022-6.025-6.99"
                     ></path>
                   </svg>
                   <span>รีเฟร็ช</span>
@@ -1065,7 +1169,7 @@
                 </select>
                 <button
                   onclick="resetAuditView()"
-                  class="btn-ripple inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-50 text-gray-600 border border-gray-200 rounded-lg font-medium text-sm hover:bg-gray-100 hover:border-gray-300 focus:ring-4 focus:ring-gray-200 focus:outline-none transition-all duration-300"
+                  class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-50 text-gray-600 border border-gray-200 rounded-lg font-medium text-sm hover:bg-gray-100 hover:border-gray-300 focus:ring-4 focus:ring-gray-200 focus:outline-none transition-all duration-300"
                 >
                   <svg
                     class="w-4 h-4"
@@ -1077,7 +1181,7 @@
                       stroke-linecap="round"
                       stroke-linejoin="round"
                       stroke-width="2"
-                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 7m0 0C4.404 16.027 3.755 12.98 2.476m8.548 3.523A8.001 8.001 0 0019.424 7m0 0c0-3.547-2.548-7.022-6.025-6.025"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 7m0 0C4.404 16.027 3.755 12.98 2.476 12.5m8.548 3.523A8.001 8.001 0 0019.424 7m0 0c0-3.547-2.548-7.022-6.025-6.99"
                     ></path>
                   </svg>
                   <span>รีเฟร็ช</span>
@@ -1160,7 +1264,8 @@
             </h2>
             <button
               onclick="closeModal()"
-              class="inline-flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-lg hover:bg-gray-100"
+              aria-label="ปิดหน้าต่าง"
+              class="inline-flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-primary-200"
             >
               <svg
                 class="w-6 h-6"
@@ -1231,7 +1336,8 @@
                   <button
                     type="button"
                     onclick="showFetchMethodInfo()"
-                    class="inline-flex items-center gap-1.5 text-xs font-medium text-primary-600 hover:text-primary-700 transition-colors"
+                    aria-label="ดูรูปแบบข้อมูลที่รองรับ"
+                    class="inline-flex items-center gap-1.5 text-xs font-medium text-primary-600 hover:text-primary-700 transition-colors rounded-lg px-1 py-0.5 focus:outline-none focus:ring-4 focus:ring-primary-200"
                   >
                     <svg
                       class="w-4 h-4"
@@ -1246,7 +1352,7 @@
                         d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                       />
                     </svg>
-                    <!-- <span>Info</span> -->
+                    <span class="sr-only">ดูรูปแบบข้อมูลที่รองรับ</span>
                   </button>
                 </div>
                 <select
@@ -1257,7 +1363,9 @@
                   <optgroup label="พร้อมใช้งาน">
                     <option value="rss">RSS</option>
                     <option value="html">HTML</option>
-                    <option value="api">API (WordPress API / Generic JSON)</option>
+                    <option value="api">
+                      API (WordPress API / Generic JSON)
+                    </option>
                   </optgroup>
                   <optgroup label="ยังไม่รองรับ">
                     <option value="" disabled>JSON Feed</option>
@@ -1302,10 +1410,7 @@
                     <option value="wordpress">WordPress API</option>
                     <option value="generic_json">Generic JSON API</option>
                   </select>
-                  <p
-                    id="apiVariantHint"
-                    class="mt-2 text-xs text-gray-500"
-                  >
+                  <p id="apiVariantHint" class="mt-2 text-xs text-gray-500">
                     ใช้กับ endpoint แบบ `/wp-json/wp/v2/posts`
                   </p>
                 </div>
@@ -1314,8 +1419,8 @@
                   <div
                     class="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-800"
                   >
-                    กรอก mapping แบบ dot-path เช่น `data.items`, `title.rendered`,
-                    `url`, `published_at`
+                    กรอก mapping แบบ dot-path เช่น `data.items`,
+                    `title.rendered`, `url`, `published_at`
                   </div>
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -1402,7 +1507,7 @@
               <button
                 type="submit"
                 id="submitBtn"
-                class="btn-ripple btn-shimmer inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-primary-50 text-primary-600 border border-primary-200 rounded-lg font-medium text-sm hover:bg-primary-100 hover:border-primary-300 focus:ring-4 focus:ring-primary-200 focus:outline-none transition-all duration-300 min-w-[120px]"
+                class="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-primary-50 text-primary-600 border border-primary-200 rounded-lg font-medium text-sm hover:bg-primary-100 hover:border-primary-300 focus:ring-4 focus:ring-primary-200 focus:outline-none transition-all duration-300 min-w-[120px]"
               >
                 <svg
                   class="w-4 h-4"
@@ -1442,7 +1547,8 @@
             <button
               type="button"
               onclick="closeFetchMethodInfo()"
-              class="inline-flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-lg hover:bg-gray-100"
+              aria-label="ปิดหน้าต่าง"
+              class="inline-flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-primary-200"
             >
               <svg
                 class="w-6 h-6"
@@ -1510,11 +1616,19 @@
               <div
                 class="mt-3 rounded-lg border border-cyan-200 bg-white/70 p-3 text-xs text-cyan-900 space-y-1"
               >
-                <div><span class="font-semibold">items_path:</span> `data.items`</div>
-                <div><span class="font-semibold">title_field:</span> `title`</div>
+                <div>
+                  <span class="font-semibold">items_path:</span> `data.items`
+                </div>
+                <div>
+                  <span class="font-semibold">title_field:</span> `title`
+                </div>
                 <div><span class="font-semibold">link_field:</span> `url`</div>
-                <div><span class="font-semibold">date_field:</span> `published_at`</div>
-                <div><span class="font-semibold">summary_field:</span> `summary`</div>
+                <div>
+                  <span class="font-semibold">date_field:</span> `published_at`
+                </div>
+                <div>
+                  <span class="font-semibold">summary_field:</span> `summary`
+                </div>
               </div>
             </div>
 
@@ -1600,8 +1714,17 @@
       let currentSourcesPage = 1;
       let currentAuditPage = 1;
       let currentDashboardSourceHealthPage = 1;
+      let dashboardSourceHealthFilter = false;
       const ITEMS_PER_PAGE = 20;
       const DASHBOARD_SOURCE_HEALTH_PER_PAGE = 20;
+      const DASHBOARD_HEALTH_SORT_ORDER = {
+        error: 0,
+        warning: 1,
+        needs_test: 2,
+        no_fetch_yet: 3,
+        inactive: 4,
+        ok: 5,
+      };
       const AUTH_REQUIRED_ERROR = "AUTH_REQUIRED";
       let authUser = null;
       let manualFetchRunning = false;
@@ -1898,6 +2021,9 @@
 
       // Switch between tabs
       function switchTab(tab) {
+        if (tab === "dashboard" && currentTab !== "dashboard") {
+          dashboardSourceHealthFilter = false;
+        }
         currentTab = tab;
 
         // Update tab buttons
@@ -1965,8 +2091,12 @@
           const result = await response.json();
           if (result.success) {
             dashboardOverview = result.data || {};
+            setDashboardErrorBanner(null);
             renderDashboard(dashboardOverview);
           } else {
+            setDashboardErrorBanner(
+              result.error || result.message || "Failed to load dashboard",
+            );
             showToast("Failed to load dashboard", "error");
           }
         } catch (error) {
@@ -1974,10 +2104,28 @@
             return;
           }
           console.error("Error:", error);
+          setDashboardErrorBanner("Cannot connect to the server");
           showToast("Cannot connect to the server", "error");
         } finally {
           hideLoading();
         }
+      }
+
+      function setDashboardErrorBanner(message) {
+        const banner = document.getElementById("dashboardErrorBanner");
+        if (!banner) return;
+        if (!message) {
+          banner.classList.add("hidden");
+          return;
+        }
+        const detail = document.getElementById("dashboardErrorDetail");
+        if (detail) {
+          detail.textContent =
+            message === "Cannot connect to the server"
+              ? 'เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ ข้อมูลที่แสดงอาจไม่ใช่ข้อมูลล่าสุด ลองกด "ลองอีกครั้ง"'
+              : `เกิดข้อผิดพลาด: ${message} — ข้อมูลที่แสดงอาจไม่ใช่ข้อมูลล่าสุด ลองกด "ลองอีกครั้ง"`;
+        }
+        banner.classList.remove("hidden");
       }
 
       function renderDashboard(data) {
@@ -1987,7 +2135,9 @@
         const trends = data.trends || {};
         const actionableAlerts = data.actionable_alerts || [];
         const generatedAt = document.getElementById("dashboardGeneratedAt");
-        const healthCount = document.getElementById("dashboardSourceHealthCount");
+        const healthCount = document.getElementById(
+          "dashboardSourceHealthCount",
+        );
 
         if (generatedAt) {
           generatedAt.textContent = data.generated_at
@@ -2003,7 +2153,41 @@
         renderDashboardSourceSummary(kpis, healthRows);
         renderDashboardTrends(trends);
         renderDashboardActionableAlerts(actionableAlerts);
-        renderDashboardSourceHealth(healthRows, currentDashboardSourceHealthPage);
+        renderDashboardSourceHealth(
+          healthRows,
+          currentDashboardSourceHealthPage,
+        );
+        renderDashboardSourceHealthFilterChip();
+      }
+
+      function renderDashboardSourceHealthFilterChip() {
+        const chip = document.getElementById("dashboardSourceHealthFilterChip");
+        if (!chip) return;
+        chip.classList.toggle("hidden", !dashboardSourceHealthFilter);
+      }
+
+      function filterDashboardSourceHealthNeedsAttention() {
+        dashboardSourceHealthFilter = true;
+        const rows = dashboardOverview?.source_health || [];
+        renderDashboardSourceHealth(rows, 1);
+        renderDashboardSourceHealthFilterChip();
+        document
+          .getElementById("dashboardSourceHealthCard")
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      function clearDashboardSourceHealthFilter() {
+        dashboardSourceHealthFilter = false;
+        const rows = dashboardOverview?.source_health || [];
+        renderDashboardSourceHealth(rows, 1);
+        renderDashboardSourceHealthFilterChip();
+      }
+
+      function goToArticlesLineSent() {
+        switchTab("articles");
+        const select = document.getElementById("articleLineStatusFilter");
+        if (select) select.value = "sent";
+        fetchArticles(1);
       }
 
       function renderDashboardKpis(kpis, fetch24h) {
@@ -2016,49 +2200,50 @@
             value: formatNumber(kpis.total_articles),
             detail: `วันนี้ ${formatNumber(kpis.articles_today)} | 7 วัน ${formatNumber(kpis.articles_last_7_days)}`,
             tone: "primary",
+            onclick: "switchTab('articles')",
           },
           {
             label: "ส่ง LINE สำเร็จ",
             value: formatNumber(kpis.line_sent_total),
             detail: `Telegram ${formatNumber(kpis.telegram_sent_total)} | WP ${formatNumber(kpis.wordpress_success_total)}`,
             tone: "success",
+            onclick: "goToArticlesLineSent()",
           },
           {
             label: "Fetch 24 ชั่วโมง",
             value: formatNumber(kpis.total_fetches_24h),
             detail: `สำเร็จ ${formatNumber(fetch24h.success)} | บางส่วน ${formatNumber(fetch24h.partial)} | ล้มเหลว ${formatNumber(fetch24h.failed)}`,
             tone: "warning",
+            onclick: "switchTab('logs')",
           },
           {
             label: "Source ที่ควรตรวจ",
             value: formatNumber(kpis.sources_need_attention),
             detail: `Active ${formatNumber(kpis.active_sources)} จาก ${formatNumber(kpis.total_sources)} | Success 24h ${formatPercent(kpis.success_rate_24h)}`,
             tone: "danger",
+            onclick: "filterDashboardSourceHealthNeedsAttention()",
           },
         ];
 
-        const toneClasses = {
-          primary: "bg-primary-50 text-primary-700 border-primary-100",
-          success: "bg-success-50 text-success-700 border-success-100",
-          warning: "bg-warning-50 text-warning-800 border-warning-100",
-          danger: "bg-danger-50 text-danger-700 border-danger-100",
+        const toneAccents = {
+          primary: "hover:border-primary-300 focus:ring-primary-200",
+          success: "hover:border-success-300 focus:ring-success-200",
+          warning: "hover:border-warning-300 focus:ring-warning-200",
+          danger: "hover:border-danger-300 focus:ring-danger-200",
         };
 
         container.innerHTML = kpiCards
           .map(
             (card) => `
-              <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-                <div class="flex items-start justify-between gap-4">
-                  <div>
-                    <p class="text-sm font-medium text-gray-500">${escapeHtml(card.label)}</p>
-                    <p class="text-3xl font-bold text-gray-900 mt-2">${escapeHtml(card.value)}</p>
-                  </div>
-                  <span class="w-10 h-10 rounded-xl border flex items-center justify-center ${toneClasses[card.tone]}">
-                    <span class="w-2.5 h-2.5 rounded-full bg-current"></span>
-                  </span>
-                </div>
-                <p class="text-xs text-gray-500 mt-4 leading-5">${escapeHtml(card.detail)}</p>
-              </div>
+              <button
+                type="button"
+                onclick="${card.onclick}"
+                class="text-left w-full bg-white rounded-xl shadow-sm border border-gray-200 p-5 cursor-pointer transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-4 ${toneAccents[card.tone]}"
+              >
+                <p class="text-sm font-medium text-gray-500">${escapeHtml(card.label)}</p>
+                <p class="text-4xl font-bold text-gray-900 mt-2 tabular-nums tracking-tight">${escapeHtml(card.value)}</p>
+                <p class="text-xs text-gray-500 mt-3 leading-5">${escapeHtml(card.detail)}</p>
+              </button>
             `,
           )
           .join("");
@@ -2070,7 +2255,8 @@
 
         const methodCounts = rows.reduce((acc, source) => {
           const method =
-            source.fetch_method === "api" && source.api_variant === "generic_json"
+            source.fetch_method === "api" &&
+            source.api_variant === "generic_json"
               ? "Generic JSON API"
               : source.fetch_method === "api"
                 ? "WP API"
@@ -2183,7 +2369,10 @@
         return `
           <div class="rounded-lg bg-gray-50 border border-gray-100 px-3 py-2">
             <div class="flex items-center justify-between text-[11px] text-gray-500 mb-1">
-              <span>${escapeHtml(label)}</span>
+              <span class="inline-flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full ${barClass}" aria-hidden="true"></span>
+                ${escapeHtml(label)}
+              </span>
               <span class="font-semibold text-gray-800">${formatNumber(numericValue)}</span>
             </div>
             <div class="h-2 rounded-full bg-gray-200 overflow-hidden">
@@ -2231,16 +2420,25 @@
         );
         if (!tbody) return;
 
-        if (rows.length === 0) {
-          tbody.innerHTML =
-            '<tr><td colspan="7" class="px-4 py-12 text-center text-gray-500">ยังไม่มีข้อมูล source</td></tr>';
+        const sortedRows = [...rows].sort(
+          (a, b) =>
+            (DASHBOARD_HEALTH_SORT_ORDER[a.health_status] ?? 99) -
+            (DASHBOARD_HEALTH_SORT_ORDER[b.health_status] ?? 99),
+        );
+
+        const filteredRows = dashboardSourceHealthFilter
+          ? sortedRows.filter((source) => source.health_status !== "ok")
+          : sortedRows;
+
+        if (filteredRows.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-12 text-center text-gray-500">${dashboardSourceHealthFilter ? "ไม่มี source ที่ควรตรวจในขณะนี้" : "ยังไม่มีข้อมูล source"}</td></tr>`;
           if (paginationContainer) {
             paginationContainer.classList.add("hidden");
           }
           return;
         }
 
-        const total = rows.length;
+        const total = filteredRows.length;
         const totalPages = Math.max(
           1,
           Math.ceil(total / DASHBOARD_SOURCE_HEALTH_PER_PAGE),
@@ -2248,7 +2446,7 @@
         const safePage = Math.min(Math.max(page, 1), totalPages);
         const start = (safePage - 1) * DASHBOARD_SOURCE_HEALTH_PER_PAGE;
         const end = start + DASHBOARD_SOURCE_HEALTH_PER_PAGE;
-        const paginatedRows = rows.slice(start, end);
+        const paginatedRows = filteredRows.slice(start, end);
 
         currentDashboardSourceHealthPage = safePage;
         dashboardSourceHealthPagination = {
@@ -2266,7 +2464,8 @@
               ? '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-success-100 text-success-700">Active</span>'
               : '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">Inactive</span>';
             const typeLabel =
-              source.fetch_method === "api" && source.api_variant === "generic_json"
+              source.fetch_method === "api" &&
+              source.api_variant === "generic_json"
                 ? "Generic JSON API"
                 : source.fetch_method === "api"
                   ? "WP API"
@@ -2339,75 +2538,54 @@
         renderDashboardSourceHealth(rows, page);
       }
 
+      // Single source of truth for status badge colors (P3 distill) —
+      // prevents drift between dashboard health and alert badges.
+      const STATUS_BADGE_MAP = {
+        success: { bg: "bg-success-100", text: "text-success-700" },
+        warning: { bg: "bg-warning-100", text: "text-warning-800" },
+        danger: { bg: "bg-danger-100", text: "text-danger-700" },
+        amber: { bg: "bg-amber-100", text: "text-amber-700" },
+        sky: { bg: "bg-sky-100", text: "text-sky-700" },
+        gray: { bg: "bg-gray-100", text: "text-gray-600" },
+      };
+
+      function getFallbackStatusBadge(label) {
+        return {
+          bg: STATUS_BADGE_MAP.gray.bg,
+          text: "text-gray-700",
+          label: label || "-",
+        };
+      }
+
       function getDashboardHealthBadge(status) {
         const config = {
-          ok: {
-            bg: "bg-success-100",
-            text: "text-success-700",
-            label: "ปกติ",
-          },
-          warning: {
-            bg: "bg-warning-100",
-            text: "text-warning-800",
-            label: "ควรตรวจ",
-          },
-          error: {
-            bg: "bg-danger-100",
-            text: "text-danger-700",
-            label: "ผิดพลาด",
-          },
-          needs_test: {
-            bg: "bg-amber-100",
-            text: "text-amber-700",
-            label: "รอทดสอบ",
-          },
-          no_fetch_yet: {
-            bg: "bg-sky-100",
-            text: "text-sky-700",
-            label: "ยังไม่ fetch",
-          },
-          inactive: {
-            bg: "bg-gray-100",
-            text: "text-gray-600",
-            label: "Inactive",
-          },
+          ok: { style: "success", label: "ปกติ" },
+          warning: { style: "warning", label: "ควรตรวจ" },
+          error: { style: "danger", label: "ผิดพลาด" },
+          needs_test: { style: "amber", label: "รอทดสอบ" },
+          no_fetch_yet: { style: "sky", label: "ยังไม่ fetch" },
+          inactive: { style: "gray", label: "Inactive" },
         };
 
-        return (
-          config[status] || {
-            bg: "bg-gray-100",
-            text: "text-gray-700",
-            label: status || "-",
-          }
-        );
+        const entry = config[status];
+        if (!entry) {
+          return getFallbackStatusBadge(status);
+        }
+        return { ...STATUS_BADGE_MAP[entry.style], label: entry.label };
       }
 
       function getDashboardAlertBadge(severity) {
         const config = {
-          error: {
-            bg: "bg-danger-100",
-            text: "text-danger-700",
-            label: "เร่งด่วน",
-          },
-          warning: {
-            bg: "bg-warning-100",
-            text: "text-warning-800",
-            label: "ควรตรวจ",
-          },
-          info: {
-            bg: "bg-sky-100",
-            text: "text-sky-700",
-            label: "ข้อมูล",
-          },
+          error: { style: "danger", label: "เร่งด่วน" },
+          warning: { style: "warning", label: "ควรตรวจ" },
+          info: { style: "sky", label: "ข้อมูล" },
         };
 
-        return (
-          config[severity] || {
-            bg: "bg-gray-100",
-            text: "text-gray-700",
-            label: severity || "-",
-          }
-        );
+        const entry = config[severity];
+        if (!entry) {
+          return getFallbackStatusBadge(severity);
+        }
+        return { ...STATUS_BADGE_MAP[entry.style], label: entry.label };
       }
 
       function mapTrendRows(rows, valueKey) {
@@ -2712,7 +2890,7 @@
 
                     <div class="grid grid-cols-2 xl:grid-cols-4 gap-2">
                         <button onclick="toggleStatus(${source.id})"
-                            class="btn-ripple flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg font-medium text-sm transition-all duration-300 border ${source.is_active ? "bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 focus:outline-none" : "bg-success-50 text-success-600 border-success-200 hover:bg-success-100 focus:ring-4 focus:ring-success-200 focus:outline-none"}">
+                            class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg font-medium text-sm transition-all duration-300 border ${source.is_active ? "bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 focus:outline-none" : "bg-success-50 text-success-600 border-success-200 hover:bg-success-100 focus:ring-4 focus:ring-success-200 focus:outline-none"}">
                             ${
                               source.is_active
                                 ? '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span>ปิด</span>'
@@ -2720,21 +2898,21 @@
                             }
                         </button>
                         <button onclick="testSource(${source.id})"
-                            class="btn-ripple flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 bg-warning-50 text-warning-800 border border-warning-200 rounded-lg font-medium text-sm hover:bg-warning-100 focus:ring-4 focus:ring-warning-200 focus:outline-none transition-all duration-300">
+                            class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 bg-warning-50 text-warning-800 border border-warning-200 rounded-lg font-medium text-sm hover:bg-warning-100 focus:ring-4 focus:ring-warning-200 focus:outline-none transition-all duration-300">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6M7 4h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6a2 2 0 012-2z"></path>
                             </svg>
                             <span>ทดสอบ</span>
                         </button>
                         <button onclick="editSource(${source.id})"
-                            class="btn-ripple flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 bg-primary-50 text-primary-600 border border-primary-200 rounded-lg font-medium text-sm hover:bg-primary-100 focus:ring-4 focus:ring-primary-200 focus:outline-none transition-all duration-300">
+                            class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 bg-primary-50 text-primary-600 border border-primary-200 rounded-lg font-medium text-sm hover:bg-primary-100 focus:ring-4 focus:ring-primary-200 focus:outline-none transition-all duration-300">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                             </svg>
                             <span>แก้ไข</span>
                         </button>
                         <button onclick="deleteSource(${source.id})"
-                            class="btn-ripple flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 bg-danger-50 text-danger-600 border border-danger-200 rounded-lg font-medium text-sm hover:bg-danger-100 focus:ring-4 focus:ring-danger-200 focus:outline-none transition-all duration-300">
+                            class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 bg-danger-50 text-danger-600 border border-danger-200 rounded-lg font-medium text-sm hover:bg-danger-100 focus:ring-4 focus:ring-danger-200 focus:outline-none transition-all duration-300">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                             </svg>
@@ -3569,7 +3747,8 @@
 
       function updateApiConfigVisibility() {
         const fetchMethod = document.getElementById("fetchMethod")?.value || "";
-        const apiVariant = document.getElementById("apiVariant")?.value || "wordpress";
+        const apiVariant =
+          document.getElementById("apiVariant")?.value || "wordpress";
         const apiConfigSection = document.getElementById("apiConfigSection");
         const genericJsonMappingSection = document.getElementById(
           "genericJsonMappingSection",
@@ -3580,7 +3759,11 @@
         const jsonLinkField = document.getElementById("jsonLinkField");
         const jsonDateField = document.getElementById("jsonDateField");
 
-        if (!apiConfigSection || !genericJsonMappingSection || !apiVariantHint) {
+        if (
+          !apiConfigSection ||
+          !genericJsonMappingSection ||
+          !apiVariantHint
+        ) {
           return;
         }
 

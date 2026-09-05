@@ -38,4 +38,17 @@ module.exports = {
     },
   },
   plugins: [],
+  safelist: [
+    // KPI card tone classes are injected at runtime via innerHTML templates
+    // (renderDashboardKpis toneAccents/toneClasses), so the JIT purge cannot
+    // see them in HTML. Keep the full tone matrix in the build.
+    'hover:border-primary-300',
+    'hover:border-success-300',
+    'hover:border-warning-300',
+    'hover:border-danger-300',
+    'focus:ring-primary-200',
+    'focus:ring-success-200',
+    'focus:ring-warning-200',
+    'focus:ring-danger-200',
+  ],
 };
