@@ -43,6 +43,7 @@ SUBSCRIPTION_ALLOWED_ORIGINS=https://www.example.org
 SUBSCRIPTION_CONFIRM_BASE_URL=https://news.example.org/
 SUBSCRIPTION_TOKEN_SECRET=<generated-secret-with-at-least-32-characters>
 EMAIL_FROM=Innovation News <news@example.org>
+EMAIL_WORKER_MAX_ATTEMPTS=3
 SMTP_HOST=smtp.example.org
 SMTP_PORT=587
 SMTP_SECURE=0

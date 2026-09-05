@@ -488,6 +488,16 @@ class SchedulerAndEnvironmentPolicyTests(unittest.TestCase):
                     encoding='utf-8',
                 )
                 environment = os.environ.copy()
+                for key in (
+                    'ADMIN_BIND_HOST',
+                    'ADMIN_TRUST_PROXY',
+                    'ADMIN_USERNAME',
+                    'ADMIN_PASSWORD',
+                    'ADMIN_SESSION_SECRET',
+                    'ADMIN_USERNAME_2',
+                    'ADMIN_PASSWORD_2',
+                ):
+                    environment.pop(key, None)
                 environment['INNOVATION_NEWS_ENV_FILE'] = str(env_path)
                 return subprocess.run(
                     ['node', str(server_path), '--config-check'],
@@ -591,6 +601,9 @@ class SchedulerAndEnvironmentPolicyTests(unittest.TestCase):
         self.assertIn("nodemailer.createTransport", source)
         self.assertIn('LIMIT ${batchSize}', source)
         self.assertNotIn('LIMIT ?`', source)
+        self.assertIn('isTransientError', source)
+        self.assertIn('EMAIL_WORKER_MAX_ATTEMPTS', source)
+        self.assertIn('retryable = TRUE', source)
 
     def test_admin_assets_are_self_hosted_and_csp_blocks_external_scripts(self):
         html_source = (ROOT_DIR / 'fetch-innovation-news' / 'public' / 'index.html').read_text(

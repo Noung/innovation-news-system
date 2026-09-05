@@ -58,6 +58,14 @@ function sanitizedError(error) {
         .slice(0, 1000);
 }
 
+function isTransientError(error) {
+    const code = String(error && error.code ? error.code : '').toUpperCase();
+    const responseCode = Number(error && error.responseCode ? error.responseCode : 0);
+    return responseCode >= 400 && responseCode < 500
+        ? responseCode !== 401 && responseCode !== 403
+        : ['421', '450', '451', '452', 'ECONNECTION', 'ECONNRESET', 'ETIMEDOUT', 'EAI_AGAIN'].includes(code);
+}
+
 async function main() {
     if (!enabled) {
         console.log('Email worker is disabled');
@@ -76,9 +84,10 @@ async function main() {
     });
     const transport = getTransport();
     const batchSize = readInteger('EMAIL_WORKER_BATCH_SIZE', 50, 1, 200);
+    const maxAttempts = readInteger('EMAIL_WORKER_MAX_ATTEMPTS', 3, 1, 10);
     const [candidates] = await pool.execute(
         `SELECT DISTINCT n.id AS article_id, n.title, n.summary, n.wordpress_url,
-                s.id AS subscriber_id, s.email_normalized
+                s.id AS subscriber_id, s.email_normalized, d.id AS delivery_id
          FROM innovation_news n
          INNER JOIN article_benefits ab ON ab.article_id = n.id
          INNER JOIN subscriber_benefits sb ON sb.benefit_slug = ab.benefit_slug
@@ -87,25 +96,50 @@ async function main() {
            ON d.article_id = n.id AND d.subscriber_id = s.id
          WHERE n.wordpress_status IN ('created', 'duplicate')
            AND n.wordpress_url IS NOT NULL AND n.wordpress_url <> ''
-           AND d.id IS NULL
+           AND (
+                d.id IS NULL
+                OR (
+                    d.status = 'failed' AND d.retryable = TRUE
+                    AND (
+                        SELECT COUNT(*)
+                        FROM email_delivery_attempts retry_attempts
+                        WHERE retry_attempts.email_delivery_id = d.id
+                    ) < ?
+                )
+           )
          ORDER BY n.id ASC
-           LIMIT ${batchSize}`
+           LIMIT ${batchSize}`,
+        [maxAttempts]
     );
 
     for (const candidate of candidates) {
         const connection = await pool.getConnection();
         try {
             await connection.beginTransaction();
-            const [delivery] = await connection.execute(
-                `INSERT IGNORE INTO email_deliveries (article_id, subscriber_id, status)
+            let deliveryId = candidate.delivery_id;
+            if (deliveryId) {
+                const [retry] = await connection.execute(
+                    `UPDATE email_deliveries
+                     SET status = 'pending', retryable = FALSE, error_message = NULL
+                     WHERE id = ? AND status = 'failed' AND retryable = TRUE`,
+                    [deliveryId]
+                );
+                if (!retry.affectedRows) {
+                    await connection.rollback();
+                    continue;
+                }
+            } else {
+                const [delivery] = await connection.execute(
+                    `INSERT IGNORE INTO email_deliveries (article_id, subscriber_id, status)
                  VALUES (?, ?, 'pending')`,
-                [candidate.article_id, candidate.subscriber_id]
-            );
-            if (!delivery.affectedRows) {
-                await connection.rollback();
-                continue;
+                    [candidate.article_id, candidate.subscriber_id]
+                );
+                if (!delivery.affectedRows) {
+                    await connection.rollback();
+                    continue;
+                }
+                deliveryId = delivery.insertId;
             }
-            const deliveryId = delivery.insertId;
             const token = unsubscribeToken();
             await connection.execute(
                 `INSERT INTO subscription_tokens (subscriber_id, token_type, token_hash, expires_at)
@@ -123,7 +157,8 @@ async function main() {
                 });
                 await connection.execute(
                     `UPDATE email_deliveries
-                     SET status = 'sent', provider_message_id = ?, sent_at = NOW()
+                     SET status = 'sent', retryable = FALSE,
+                         provider_message_id = ?, sent_at = NOW()
                      WHERE id = ?`,
                     [String(result.messageId || '').slice(0, 255) || null, deliveryId]
                 );
@@ -134,9 +169,12 @@ async function main() {
                 );
             } catch (error) {
                 const message = sanitizedError(error);
+                const retryable = isTransientError(error);
                 await connection.execute(
-                    `UPDATE email_deliveries SET status = 'failed', error_message = ? WHERE id = ?`,
-                    [message, deliveryId]
+                    `UPDATE email_deliveries
+                     SET status = 'failed', retryable = ?, error_message = ?
+                     WHERE id = ?`,
+                    [retryable, message, deliveryId]
                 );
                 await connection.execute(
                     `INSERT INTO email_delivery_attempts (email_delivery_id, status, error_message)

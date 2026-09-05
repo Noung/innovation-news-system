@@ -159,6 +159,7 @@ CREATE TABLE email_deliveries (
     article_id BIGINT UNSIGNED NOT NULL,
     subscriber_id BIGINT UNSIGNED NOT NULL,
     status ENUM('pending', 'sent', 'failed') NOT NULL DEFAULT 'pending',
+    retryable BOOLEAN NOT NULL DEFAULT FALSE,
     provider_message_id VARCHAR(255) NULL,
     error_message VARCHAR(1000) NULL,
     sent_at DATETIME NULL,
