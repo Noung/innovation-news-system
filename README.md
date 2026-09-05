@@ -53,12 +53,12 @@ flowchart LR
     storage --> admin
 ```
 
-| Metric | ค่า |
-|--------|-----|
-| แหล่งข้อมูล | 16 |
+| Metric          | ค่า   |
+| --------------- | ----- |
+| แหล่งข้อมูล     | 16    |
 | บทความที่บันทึก | ~500+ |
 | WordPress posts | ~500+ |
-| Benefit terms | 20 |
+| Benefit terms   | 20    |
 
 ดูรายละเอียดสถาปัตยกรรมและขั้นตอนการทำงานที่ [`docs/SYSTEM-OVERVIEW.md`](docs/SYSTEM-OVERVIEW.md)
 
