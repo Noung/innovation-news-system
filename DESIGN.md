@@ -2,10 +2,19 @@
 name: Innovation News Management System
 description: Admin console for the automated innovation-news fetch, review, and multi-channel publishing pipeline
 colors:
-  signal-blue: "#2563eb"
-  signal-blue-deep: "#1d4ed8"
-  signal-blue-tint: "#eff6ff"
-  signal-blue-soft: "#dbeafe"
+  psu-deep-blue: "#003c71"
+  psu-sky-blue: "#009cde"
+  psu-ocean-blue: "#315dae"
+  psu-andaman-blue: "#0085ad"
+  psu-river-blue: "#59cbe8"
+  psu-sritrang: "#b6b8dc"
+  summer-accent: "#ff8040"
+  summer-accent-text: "#c4541e"
+  summer-accent-tint: "#fff4ec"
+  signal-blue: "#003c71"
+  signal-blue-deep: "#003462"
+  signal-blue-tint: "#eef3f8"
+  signal-blue-soft: "#b6b8dc"
   confirmed-green: "#16a34a"
   confirmed-green-tint: "#f0fdf4"
   caution-amber: "#d97706"
@@ -17,10 +26,10 @@ colors:
   ink-500: "#6b7280"
   slate-500-inactive-tab: "#64748b"
   ink-400: "#94a3b8"
-  slate-400-scrollbar: "#94a3b8"
-  slate-300-scrollbar: "#cbd5e1"
-  slate-100-scrollbar-track: "#f1f5f9"
-  surface-bg: "#f9fafb"
+  slate-400-scrollbar: "#9db4d0"
+  slate-300-scrollbar: "#b6b8dc"
+  slate-100-scrollbar-track: "#eef3f8"
+  surface-bg: "#f4f5fa"
   surface-border: "#e5e7eb"
   overlay-scrim: "rgba(2, 6, 23, 0.5)"
 typography:
@@ -104,16 +113,19 @@ The palette is a single blue accent plus a semantic status triad (green/amber/re
 
 ### Primary
 
-- **Trusted Signal Blue** (`#2563eb` / `primary-600`): interactive elements, active tab state, focus rings, count badges, primary CTA (login submit).
-- **Signal Blue Deep** (`#1d4ed8` / `primary-700`): hover state for primary CTA and links.
-- **Signal Blue Tint** (`#eff6ff` / `primary-50`): hover backgrounds, tab hover, badge backgrounds.
+- **PSU Deep Blue** (`#003c71` / `primary-600`): interactive elements, active tab state, focus rings, count badges, primary CTA (login submit), the 4px header underline.
+- **PSU Ocean Blue** (`#315dae` / `primary-500`): hover state for primary CTA and links.
+- **PSU Sky Blue** (`#009cde` / `primary-400`): bright emphasis moments (eyebrow text).
+- **PSU River Blue** (`#59cbe8` / `primary-300`): hover borders on cards/inputs.
+- **Signal Blue Tint** (`#eef3f8` / `primary-50`): hover backgrounds, tab hover, badge backgrounds.
 
 ### Neutral
 
 - **Ink 900** (`#111827` / `gray-900`): headings and primary text.
 - **Ink 700** (`#374151` / `gray-700`): table headers, secondary emphasis text.
 - **Ink 500** (`#6b7280` / `gray-500`): meta text, placeholders, helper copy.
-- **Surface Background** (`#f9fafb` / `gray-50`): page canvas and tinted input backgrounds.
+- **PSU Sritrang** (`#b6b8dc` / `primary-100`): soft accents, scrollbar thumb, chip backgrounds.
+- **Surface Background** (`#f4f5fa` / `surface-canvas`): page canvas — a very light Sritrang tint, not pure gray. Cards stay white on top of it.
 - **Surface Border** (`#e5e7eb` / `gray-200`): card borders, dividers, input borders.
 
 ### Status colors
@@ -126,7 +138,9 @@ The palette is a single blue accent plus a semantic status triad (green/amber/re
 
 **The Status-Color Rule.** Color communicates state, not decoration. Green/amber/red only appear tied to a real status (health, success/failure, destructive action). Never use them as arbitrary accent variety.
 
-**The One Accent Rule.** Signal blue is the only expressive accent. The secondary purple scale defined in `tailwind.config.js` stays reserved/unused; do not activate it for gradients or highlights.
+**The One Accent Rule.** PSU Deep Blue is the only expressive accent. The secondary purple scale defined in `tailwind.config.js` stays reserved/unused; do not activate it for gradients or highlights.
+
+**The Summer Highlight Rule.** PSU Summer Orange (`#ff8040` family) is a highlight-only accent for personality — eyebrow labels, thin decorative strips, "fresh" indicators. It must never encode actions, links, or status (orange sits too close to the warning amber vocabulary), and never on large surfaces. When in doubt, it stays out.
 
 ## Typography
 
@@ -221,7 +235,8 @@ Full-screen scrim `bg-slate-950/50 backdrop-blur-sm` behind a centered `rounded-
 
 ### Don't:
 
-- **Don't** activate the unused secondary purple scale for gradients or accents; the one-accent rule (signal blue) stays.
+- **Don't** activate the unused secondary purple scale for gradients or accents; the one-accent rule (PSU Deep Blue + Summer highlight) stays.
+- **Don't** use Summer Orange for buttons, links, or status badges — it is a highlight tone, not an action/status color.
 - **Don't** nest cards inside cards; one `bg-white rounded-xl border` container per section, tables/content live directly inside it.
 - **Don't** use bounce/elastic easing; existing transitions are simple `duration-200`/`duration-300` ease.
 - **Don't** add decorative icon tiles above section headings; icons here are functional (buttons, tabs, empty states), not ornamental markers.

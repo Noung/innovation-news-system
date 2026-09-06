@@ -53,6 +53,11 @@ BUNDLE_FILES=(
     "fetch-innovation-news/public/admin.css"
     "fetch-innovation-news/public/fonts.css"
     "fetch-innovation-news/public/psu-logo.png"
+    # TODO(subscription): when the subscription/email feature ships to PROD,
+    # add these files from main to the bundle (tests.test_phase0_runtime's
+    # test_email_worker_is_gated_and_uses_idempotent_delivery_records requires
+    # email-worker.js and will ERROR until it is bundled):
+    #   "fetch-innovation-news/api/email-worker.js"
     "fetch-innovation-news/public/fonts/noto-sans-thai-400-latin.woff2"
     "fetch-innovation-news/public/fonts/noto-sans-thai-400-latin-ext.woff2"
     "fetch-innovation-news/public/fonts/noto-sans-thai-400-thai.woff2"

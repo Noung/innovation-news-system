@@ -21,15 +21,15 @@
         width: 8px;
       }
       .custom-scrollbar::-webkit-scrollbar-track {
-        background: #f1f5f9;
+        background: #eef3f8;
         border-radius: 4px;
       }
       .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
+        background: #b6b8dc;
         border-radius: 4px;
       }
       .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
+        background: #9db4d0;
       }
 
       /* Button Ripple Effect */
@@ -94,19 +94,19 @@
         animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
       }
 
-      /* Tab styles */
+      /* Tab styles — PSU Deep Blue */
       .tab-btn {
         border-color: transparent;
         color: #64748b;
         font-weight: 500;
       }
       .tab-btn:hover {
-        color: #2563eb;
-        background: #eff6ff;
+        color: #003c71;
+        background: #eef3f8;
       }
       .tab-btn.active {
-        border-color: #2563eb;
-        color: #2563eb;
+        border-color: #003c71;
+        color: #003c71;
         font-weight: 600;
       }
 
@@ -120,10 +120,12 @@
       }
     </style>
   </head>
-  <body class="bg-gray-50 min-h-screen">
+  <body class="bg-surface-canvas min-h-screen">
     <div class="min-h-screen flex flex-col">
+      <!-- Summer accent line: a single 3px orange strip riding the header's Deep Blue border -->
+      <div class="h-[3px] bg-accent-500" aria-hidden="true"></div>
       <!-- Top Header -->
-      <div class="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <div class="bg-white border-b-4 border-primary-600 sticky top-0 z-40">
         <div class="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex justify-between items-center h-16">
             <div class="flex items-center gap-4">
@@ -491,7 +493,7 @@
             >
               <div>
                 <p
-                  class="text-xs font-semibold uppercase tracking-[0.2em] text-primary-500 mb-2"
+                  class="text-xs font-semibold uppercase tracking-[0.2em] text-accent-600 mb-2"
                 >
                   System Overview
                 </p>
