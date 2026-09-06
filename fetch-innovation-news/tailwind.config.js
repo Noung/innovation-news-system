@@ -9,10 +9,18 @@ module.exports = {
         sans: ['Noto Sans Thai', 'Tahoma', 'Arial', 'sans-serif'],
       },
       colors: {
+        // Page canvas: very light tint of PSU Sritrang (#b6b8dc) instead of
+        // pure gray — gives the whole desk a faint blue cast (user request).
+        surface: {
+          canvas: '#f4f5fa',
+        },
+        // PSU brand palette — primary remapped from Tailwind Blue to PSU Deep
+        // Blue family (brand commitment). Ramp derived for WCAG AA contrast:
+        // white on 600 = ~10:1, ink on 50 = high, borders on white >= 3:1.
         primary: {
-          50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd',
-          400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8',
-          800: '#1e40af', 900: '#1e3a8a', 950: '#172554',
+          50: '#eef3f8', 100: '#b6b8dc', 200: '#9db4d0', 300: '#59cbe8',
+          400: '#009cde', 500: '#315dae', 600: '#003c71', 700: '#003462',
+          800: '#012b52', 900: '#012343', 950: '#011a32',
         },
         secondary: {
           50: '#f5f3ff', 100: '#ede9fe', 200: '#ddd6fe', 300: '#c4b5fd',
