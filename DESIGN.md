@@ -8,6 +8,9 @@ colors:
   psu-andaman-blue: "#0085ad"
   psu-river-blue: "#59cbe8"
   psu-sritrang: "#b6b8dc"
+  summer-accent: "#ff8040"
+  summer-accent-text: "#c4541e"
+  summer-accent-tint: "#fff4ec"
   signal-blue: "#003c71"
   signal-blue-deep: "#003462"
   signal-blue-tint: "#eef3f8"
@@ -135,7 +138,9 @@ The palette is a single blue accent plus a semantic status triad (green/amber/re
 
 **The Status-Color Rule.** Color communicates state, not decoration. Green/amber/red only appear tied to a real status (health, success/failure, destructive action). Never use them as arbitrary accent variety.
 
-**The One Accent Rule.** Signal blue is the only expressive accent. The secondary purple scale defined in `tailwind.config.js` stays reserved/unused; do not activate it for gradients or highlights.
+**The One Accent Rule.** PSU Deep Blue is the only expressive accent. The secondary purple scale defined in `tailwind.config.js` stays reserved/unused; do not activate it for gradients or highlights.
+
+**The Summer Highlight Rule.** PSU Summer Orange (`#ff8040` family) is a highlight-only accent for personality — eyebrow labels, thin decorative strips, "fresh" indicators. It must never encode actions, links, or status (orange sits too close to the warning amber vocabulary), and never on large surfaces. When in doubt, it stays out.
 
 ## Typography
 
@@ -230,7 +235,8 @@ Full-screen scrim `bg-slate-950/50 backdrop-blur-sm` behind a centered `rounded-
 
 ### Don't:
 
-- **Don't** activate the unused secondary purple scale for gradients or accents; the one-accent rule (signal blue) stays.
+- **Don't** activate the unused secondary purple scale for gradients or accents; the one-accent rule (PSU Deep Blue + Summer highlight) stays.
+- **Don't** use Summer Orange for buttons, links, or status badges — it is a highlight tone, not an action/status color.
 - **Don't** nest cards inside cards; one `bg-white rounded-xl border` container per section, tables/content live directly inside it.
 - **Don't** use bounce/elastic easing; existing transitions are simple `duration-200`/`duration-300` ease.
 - **Don't** add decorative icon tiles above section headings; icons here are functional (buttons, tabs, empty states), not ornamental markers.

@@ -27,6 +27,14 @@ module.exports = {
           400: '#a78bfa', 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9',
           800: '#5b21b6', 900: '#4c1d95', 950: '#2e1065',
         },
+        // PSU "Summer" highlight accent (#ff8040 family) — highlight-only,
+        // never actions or status (see DESIGN.md Summer Highlight Rule).
+        // 600 is the readable-on-white tone (~3.9:1, large/bold text), 700 for small text (~4.9:1).
+        accent: {
+          50: '#fff4ec', 100: '#ffe6d5', 200: '#ffcdb0', 300: '#ffb08a',
+          400: '#ff9559', 500: '#ff8040', 600: '#e86a2a', 700: '#c4541e',
+          800: '#9c4218', 900: '#743113',
+        },
         success: {
           50: '#f0fdf4', 100: '#dcfce7', 200: '#bbf7d0', 300: '#86efac',
           400: '#4ade80', 500: '#22c55e', 600: '#16a34a', 700: '#15803d',
